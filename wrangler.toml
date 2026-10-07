@@ -1,0 +1,32 @@
+name = "ai-music-generator"
+main = "src/index.js"
+compatibility_date = "2026-10-07"
+
+[ai]
+binding = "AI"
+
+[assets]
+directory = "./public"
+binding = "ASSETS"
+not_found_handling = "single-page-application"
+html_handling = "none"
+run_worker_first = ["/*"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "ai-music-generator-db"
+database_id = "1ad1ac7a-244a-4648-bd76-97b3d9643d72"
+
+[[r2_buckets]]
+binding = "AUDIO"
+bucket_name = "ai-music-audio"
+
+[[workflows]]
+name = "music-generation"
+binding = "MUSIC_WORKFLOW"
+class_name = "MusicGenerationWorkflow"
+
+[[ratelimits]]
+name = "AI_RATE_LIMITER"
+namespace_id = "1011"
+simple = { limit = 30, period = 60 }

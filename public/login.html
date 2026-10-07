@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sign In — AI Music Generator</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header class="header">
+  <div class="header-inner">
+    <a href="/" class="logo"><span class="logo-mark">T</span> toolara.dev</a>
+  </div>
+</header>
+
+<main class="wrap narrow">
+  <div class="card">
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="switchTab('login')">Sign In</button>
+      <button class="auth-tab" onclick="switchTab('signup')">Sign Up</button>
+    </div>
+
+    <div id="loginForm">
+      <label>Email</label>
+      <input type="email" id="loginEmail" placeholder="you@example.com">
+      <label>Password</label>
+      <input type="password" id="loginPassword" placeholder="••••••••">
+      <button class="calc" onclick="doLogin()">Sign In</button>
+      <div id="loginError" class="error" style="display:none;"></div>
+    </div>
+
+    <div id="signupForm" style="display:none;">
+      <label>Email</label>
+      <input type="email" id="signupEmail" placeholder="you@example.com">
+      <label>Password</label>
+      <input type="password" id="signupPassword" placeholder="At least 8 characters">
+      <button class="calc" onclick="doSignup()">Create Account</button>
+      <div id="signupError" class="error" style="display:none;"></div>
+    </div>
+  </div>
+</main>
+
+<script>
+function switchTab(tab) {
+  document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('loginForm').style.display = tab === 'login' ? 'block' : 'none';
+  document.getElementById('signupForm').style.display = tab === 'signup' ? 'block' : 'none';
+}
+
+async function doLogin() {
+  const email = document.getElementById('loginEmail').value;
+  const password = document.getElementById('loginPassword').value;
+  const res = await fetch('/api/auth/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password })
+  });
+  const data = await res.json();
+  if (res.ok) { window.location.href = '/dashboard.html'; }
+  else { document.getElementById('loginError').textContent = data.error; document.getElementById('loginError').style.display = 'block'; }
+}
+
+async function doSignup() {
+  const email = document.getElementById('signupEmail').value;
+  const password = document.getElementById('signupPassword').value;
+  const res = await fetch('/api/auth/signup', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password })
+  });
+  const data = await res.json();
+  if (res.ok) { window.location.href = '/dashboard.html'; }
+  else { document.getElementById('signupError').textContent = data.error; document.getElementById('signupError').style.display = 'block'; }
+}
+</script>
+</body>
+</html>

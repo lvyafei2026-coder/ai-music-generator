@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pricing — AI Music Generator</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header class="header">
+  <div class="header-inner">
+    <a href="/" class="logo"><span class="logo-mark">T</span> toolara.dev</a>
+    <nav class="header-nav">
+      <a href="dashboard.html">Dashboard</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <h1 class="page-title">Simple, transparent pricing</h1>
+
+  <div class="pricing-grid">
+    <div class="pricing-card">
+      <h2>Free</h2>
+      <div class="price">$0<span>/month</span></div>
+      <ul class="features">
+        <li>3 song generations per month</li>
+        <li>MP3 download</li>
+        <li>AI-generated lyrics</li>
+        <li>Commercial use allowed</li>
+      </ul>
+      <a href="login.html" class="btn-secondary">Get started</a>
+    </div>
+
+    <div class="pricing-card featured">
+      <div class="popular-badge">Most popular</div>
+      <h2>Pro</h2>
+      <div class="price">$9<span>/month</span></div>
+      <ul class="features">
+        <li>100 song generations per month</li>
+        <li>MP3 download</li>
+        <li>Custom lyrics support</li>
+        <li>Commercial use allowed</li>
+        <li>Priority support</li>
+      </ul>
+      <button class="btn-primary" onclick="subscribe()">Upgrade to Pro</button>
+    </div>
+  </div>
+</main>
+
+<script>
+async function subscribe() {
+  const res = await fetch('/api/billing/checkout', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ priceId: 'price_REPLACE_WITH_YOUR_STRIPE_PRICE_ID' })
+  });
+  const data = await res.json();
+  if (data.url) { window.location.href = data.url; }
+  else { alert(data.error || 'Could not start checkout.'); }
+}
+</script>
+</body>
+</html>

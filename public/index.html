@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Music Generator — Create Songs from Text (Free to Start)</title>
+<meta name="description" content="Free AI music generator. Describe the song you want, get a full track with vocals or instrumental. Powered by MiniMax Music 2.6 on Cloudflare Workers AI.">
+<meta name="robots" content="index, follow">
+<meta name="theme-color" content="#0f766e">
+<link rel="canonical" href="https://toolara.dev/ai-music-generator/">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="header">
+  <div class="header-inner">
+    <a href="/" class="logo">
+      <span class="logo-mark">T</span>
+      toolara.dev
+    </a>
+    <nav class="header-nav" id="nav">
+      <a href="/" data-i18n="navHome">Home</a>
+      <a href="pricing.html" data-i18n="navPricing">Pricing</a>
+      <a href="login.html" id="loginLink" data-i18n="navLogin">Sign In</a>
+      <a href="dashboard.html" id="dashboardLink" style="display:none;" data-i18n="navDashboard">Dashboard</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-badge">🎵 AI-powered</div>
+    <h1 data-i18n="title">AI Music Generator</h1>
+    <p data-i18n="subtitle">Describe the song you want. Get a full track with vocals or instrumental in minutes.</p>
+    <div class="hero-cta">
+      <a href="login.html" class="btn-primary" data-i18n="ctaStart">Start for free</a>
+      <a href="pricing.html" class="btn-secondary" data-i18n="ctaPricing">View pricing</a>
+    </div>
+  </div>
+</section>
+
+<main class="wrap">
+  <section class="card">
+    <h2 data-i18n="howTitle">How it works</h2>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-text" data-i18n="step1">Describe your song — genre, mood, topic, or paste lyrics.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-text" data-i18n="step2">AI generates a full track with vocals or instrumental.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-text" data-i18n="step3">Download your song as MP3. Free plan: 3 songs/month.</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 data-i18n="faqTitle">Frequently asked questions</h2>
+    <h3 data-i18n="faq1q">Is it free?</h3>
+    <p data-i18n="faq1a">Yes, free accounts get 3 song generations per month. Pro accounts get 100 per month.</p>
+    <h3 data-i18n="faq2q">What can I create?</h3>
+    <p data-i18n="faq2a">Pop, rock, electronic, hip-hop, classical — describe the style and mood, or paste your own lyrics.</p>
+    <h3 data-i18n="faq3q">Can I use the songs commercially?</h3>
+    <p data-i18n="faq3a">Yes. You own the songs you create. No watermarks or restrictions.</p>
+  </section>
+</main>
+
+<footer class="footer">
+  <p>© 2026 toolara.dev — AI Music Generator</p>
+</footer>
+
+<script src="js/i18n.js"></script>
+<script>
+  fetch('/api/auth/me').then(r => r.json()).then(data => {
+    if (data.user) {
+      document.getElementById('loginLink').style.display = 'none';
+      document.getElementById('dashboardLink').style.display = '';
+    }
+  }).catch(() => {});
+</script>
+</body>
+</html>
