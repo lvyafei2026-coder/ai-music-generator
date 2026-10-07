@@ -13,7 +13,7 @@
   </div>
 </header>
 
-<main class="wrap narrow">
+<main class="wrap narrow no-hero">
   <div class="card">
     <div class="auth-tabs">
       <button class="auth-tab active" onclick="switchTab('login')">Sign In</button>
@@ -51,26 +51,26 @@ function switchTab(tab) {
 async function doLogin() {
   const email = document.getElementById('loginEmail').value;
   const password = document.getElementById('loginPassword').value;
-  const res = await fetch('/api/auth/login', {
+  const res = await fetch('api/auth/login', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password })
   });
   const data = await res.json();
-  if (res.ok) { window.location.href = '/dashboard.html'; }
+  if (res.ok) { window.location.href = 'dashboard.html'; }
   else { document.getElementById('loginError').textContent = data.error; document.getElementById('loginError').style.display = 'block'; }
 }
 
 async function doSignup() {
   const email = document.getElementById('signupEmail').value;
   const password = document.getElementById('signupPassword').value;
-  const res = await fetch('/api/auth/signup', {
+  const res = await fetch('api/auth/signup', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password })
   });
   const data = await res.json();
-  if (res.ok) { window.location.href = '/dashboard.html'; }
+  if (res.ok) { window.location.href = 'dashboard.html'; }
   else { document.getElementById('signupError').textContent = data.error; document.getElementById('signupError').style.display = 'block'; }
 }
 </script>

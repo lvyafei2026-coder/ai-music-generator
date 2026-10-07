@@ -83,3 +83,6 @@ h2 { font-size: 1.25rem; margin: 0 0 12px; }
 h3 { font-size: 1rem; margin: 22px 0 6px; }
 p { margin: 0 0 14px; }
 @media (max-width: 560px) { .wrap { padding: 0 14px 48px; } .card { padding: 20px; } .pricing-grid { grid-template-columns: 1fr; } .hero h1 { font-size: 1.7rem; } }
+.wrap.no-hero {
+  margin-top: 40px;
+}

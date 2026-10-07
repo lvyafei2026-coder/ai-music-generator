@@ -14,7 +14,7 @@
 
 <header class="header">
   <div class="header-inner">
-    <a href="/" class="logo">
+    <a href="./" class="logo">
       <span class="logo-mark">T</span>
       toolara.dev
     </a>
@@ -75,7 +75,7 @@
 
 <script src="js/i18n.js"></script>
 <script>
-  fetch('/api/auth/me').then(r => r.json()).then(data => {
+  fetch('api/auth/me').then(r => r.json()).then(data => {
     if (data.user) {
       document.getElementById('loginLink').style.display = 'none';
       document.getElementById('dashboardLink').style.display = '';

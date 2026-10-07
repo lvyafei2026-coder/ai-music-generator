@@ -17,7 +17,7 @@
   </div>
 </header>
 
-<main class="wrap">
+<main class="wrap no-hero">
   <div class="card usage-card">
     <div class="usage-header">
       <h2>Your Plan</h2>
@@ -59,8 +59,8 @@ let currentTaskId = null;
 let pollInterval = null;
 
 async function loadUser() {
-  const res = await fetch('/api/auth/me');
-  if (!res.ok) { window.location.href = '/login.html'; return; }
+  const res = await fetch('api/auth/me');
+  if (!res.ok) { window.location.href = 'login.html'; return; }
   const data = await res.json();
   const u = data.user;
   document.getElementById('planBadge').textContent = u.plan === 'pro' ? 'Pro' : 'Free';
@@ -90,7 +90,7 @@ async function generate() {
   loadingEl.style.display = 'flex';
 
   try {
-    const res = await fetch('/api/generate', {
+    const res = await fetch('api/generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ prompt, lyrics, isInstrumental })
@@ -117,7 +117,7 @@ async function generate() {
 function pollTask(taskId) {
   if (pollInterval) clearInterval(pollInterval);
   pollInterval = setInterval(async () => {
-    const res = await fetch('/api/task/' + taskId);
+    const res = await fetch('api/task/' + taskId);
     const data = await res.json();
     if (data.status === 'completed') {
       clearInterval(pollInterval);
@@ -136,7 +136,7 @@ function pollTask(taskId) {
 }
 
 async function loadTasks() {
-  const res = await fetch('/api/tasks');
+  const res = await fetch('api/tasks');
   const data = await res.json();
   const list = document.getElementById('taskList');
   const empty = document.getElementById('emptyTasks');
@@ -160,8 +160,8 @@ async function loadTasks() {
 function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
 async function doLogout() {
-  await fetch('/api/auth/logout', { method: 'POST' });
-  window.location.href = '/';
+  await fetch('api/auth/logout', { method: 'POST' });
+  window.location.href = './';
 }
 
 loadUser();
