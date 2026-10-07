@@ -1,5 +1,5 @@
 import { handleSignup, handleLogin, handleLogout, handleMe, getCurrentUser } from './auth.js';
-import { handleCreateCheckout, handleStripeWebhook } from './billing.js';
+import { handleCreateCheckout, handlePayPalWebhook } from './billing.js';
 import { MusicGenerationWorkflow } from './music.js';
 import { createMusicTask, getMusicTask, listUserTasks, incrementUsage } from './db.js';
 
@@ -31,7 +31,7 @@ async function handleApi(request, env, url) {
   const path = url.pathname.replace(/\/$/, '');
   const method = request.method;
 
-  // 认证相关
+  // ==================== 认证相关 ====================
   if (path.endsWith('/api/auth/signup') && method === 'POST') {
     return handleSignup(request, env);
   }
@@ -45,15 +45,15 @@ async function handleApi(request, env, url) {
     return handleMe(request, env);
   }
 
-  // 支付相关
+  // ==================== 支付相关（PayPal 沙箱） ====================
   if (path.endsWith('/api/billing/checkout') && method === 'POST') {
     return handleCreateCheckout(request, env);
   }
   if (path.endsWith('/api/billing/webhook') && method === 'POST') {
-    return handleStripeWebhook(request, env);
+    return handlePayPalWebhook(request, env);
   }
 
-  // 音乐生成相关
+  // ==================== 音乐生成相关 ====================
   if (path.endsWith('/api/generate') && method === 'POST') {
     return handleGenerate(request, env);
   }
@@ -70,6 +70,7 @@ async function handleApi(request, env, url) {
   return json({ error: 'Not found' }, 404);
 }
 
+// ==================== 音乐生成 ====================
 async function handleGenerate(request, env) {
   try {
     const user = await getCurrentUser(request, env);
@@ -188,7 +189,6 @@ async function handleGetAudio(request, env, url) {
     const key = url.pathname.split('/api/audio/')[1];
     if (!key) return json({ error: 'Invalid audio key' }, 400);
 
-    // 验证这个 key 属于当前用户
     const task = await env.DB.prepare(
       'SELECT * FROM music_tasks WHERE audio_key = ? AND user_id = ?'
     ).bind(key, user.id).first();

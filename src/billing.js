@@ -1,6 +1,7 @@
 import { findUserById, updateUserPlan } from './db.js';
 
-const STRIPE_API = 'https://api.stripe.com/v1';
+// PayPal API 基础地址（沙箱环境）
+const PAYPAL_API = 'https://api-m.sandbox.paypal.com';
 
 function json(obj, status = 200) {
   return new Response(JSON.stringify(obj), {
@@ -9,113 +10,154 @@ function json(obj, status = 200) {
   });
 }
 
-async function stripeRequest(env, endpoint, method = 'GET', body = null) {
+// ---------- OAuth 获取 Access Token ----------
+async function getPayPalAccessToken(env) {
+  const auth = btoa(`${env.PAYPAL_CLIENT_ID}:${env.PAYPAL_CLIENT_SECRET}`);
+  const res = await fetch(`${PAYPAL_API}/v1/oauth2/token`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Basic ${auth}`,
+      'Content-Type': 'application/x-www-form-urlencoded'
+    },
+    body: 'grant_type=client_credentials'
+  });
+  const data = await res.json();
+  if (!data.access_token) {
+    throw new Error('Failed to get PayPal access token');
+  }
+  return data.access_token;
+}
+
+// ---------- 通用 PayPal API 请求 ----------
+async function paypalRequest(env, endpoint, method = 'GET', body = null) {
+  const token = await getPayPalAccessToken(env);
   const options = {
     method,
     headers: {
-      'Authorization': `Bearer ${env.STRIPE_SECRET_KEY}`,
-      'Content-Type': 'application/x-www-form-urlencoded'
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+      'PayPal-Request-Id': crypto.randomUUID()
     }
   };
   if (body) {
-    options.body = new URLSearchParams(body).toString();
+    options.body = JSON.stringify(body);
   }
-  const res = await fetch(`${STRIPE_API}${endpoint}`, options);
-  return res.json();
+  const res = await fetch(`${PAYPAL_API}${endpoint}`, options);
+  const data = await res.json();
+  return { ok: res.ok, status: res.status, data };
 }
 
-// 创建 Stripe 客户
-export async function createStripeCustomer(env, user) {
-  const customer = await stripeRequest(env, '/customers', 'POST', {
-    email: user.email,
-    'metadata[user_id]': user.id
-  });
-  return customer;
-}
-
-// 创建 Checkout Session
+// ---------- 创建 Checkout Session ----------
 export async function handleCreateCheckout(request, env) {
   try {
     const user = await getAuthUser(request, env);
     if (!user) return json({ error: 'Not authenticated' }, 401);
 
-    const body = await request.json();
-    const priceId = body.priceId;
-
-    if (!priceId) return json({ error: 'Price ID required' }, 400);
-
-    // 确保有 Stripe 客户
-    let customerId = user.stripe_customer_id;
-    if (!customerId) {
-      const customer = await createStripeCustomer(env, user);
-      customerId = customer.id;
-      await env.DB.prepare(
-        'UPDATE users SET stripe_customer_id = ? WHERE id = ?'
-      ).bind(customerId, user.id).run();
+    // 使用你在 PayPal 后台创建好的 Plan ID
+    const planId = env.PAYPAL_PLAN_ID_PRO;
+    if (!planId) {
+      return json({ error: 'PayPal plan not configured.' }, 500);
     }
 
-    const session = await stripeRequest(env, '/checkout/sessions', 'POST', {
-      customer: customerId,
-      'line_items[0][price]': priceId,
-      'line_items[0][quantity]': 1,
-      mode: 'subscription',
-      success_url: `${env.APP_URL}/dashboard?success=true`,
-      cancel_url: `${env.APP_URL}/pricing?canceled=true`
+    // 创建订阅
+    const result = await paypalRequest(env, '/v1/billing/subscriptions', 'POST', {
+      plan_id: planId,
+      custom_id: user.id,  // 用你的用户 ID 关联订阅
+      application_context: {
+        brand_name: 'AI Music Generator',
+        locale: 'en-US',
+        shipping_preference: 'NO_SHIPPING',
+        user_action: 'SUBSCRIBE_NOW',
+        return_url: `${env.APP_URL}/dashboard?success=true`,
+        cancel_url: `${env.APP_URL}/pricing?canceled=true`
+      }
     });
 
-    return json({ url: session.url });
+    if (!result.ok) {
+      console.error('PayPal create subscription error:', result.data);
+      return json({ error: 'Could not create subscription.' }, 500);
+    }
+
+    // 找到 approve 链接
+    const approveLink = result.data.links?.find(l => l.rel === 'approve');
+    if (!approveLink) {
+      return json({ error: 'No approval link from PayPal.' }, 500);
+    }
+
+    return json({ url: approveLink.href });
   } catch (err) {
     console.error('Checkout error:', err);
     return json({ error: 'Could not create checkout session.' }, 500);
   }
 }
 
-// 处理 Stripe Webhook
-export async function handleStripeWebhook(request, env) {
+// ---------- 处理 PayPal Webhook ----------
+export async function handlePayPalWebhook(request, env) {
   try {
-    const body = await request.text();
-    const signature = request.headers.get('stripe-signature');
+    const rawBody = await request.text();
+    const headers = request.headers;
 
-    // 验证签名（简化版，生产环境建议用 Stripe SDK 验证）
-    // 这里仅做演示，实际应使用 stripe.webhooks.constructEvent
+    // 收集验证所需字段
+    const transmissionId = headers.get('paypal-transmission-id');
+    const transmissionTime = headers.get('paypal-transmission-time');
+    const transmissionSig = headers.get('paypal-transmission-sig');
+    const certUrl = headers.get('paypal-cert-url');
+    const authAlgo = headers.get('paypal-auth-algo');
 
-    const event = JSON.parse(body);
+    if (!transmissionId || !transmissionTime || !transmissionSig || !certUrl) {
+      return json({ error: 'Missing PayPal signature headers.' }, 400);
+    }
 
-    if (event.type === 'checkout.session.completed') {
-      const session = event.data.object;
-      const customerId = session.customer;
-      const subscriptionId = session.subscription;
+    // 调用 PayPal 的 verify-webhook-signature 端点进行验证
+    const verifyResult = await paypalRequest(env, '/v1/notifications/verify-webhook-signature', 'POST', {
+      auth_algo: authAlgo,
+      cert_url: certUrl,
+      transmission_id: transmissionId,
+      transmission_sig: transmissionSig,
+      transmission_time: transmissionTime,
+      webhook_id: env.PAYPAL_WEBHOOK_ID,
+      webhook_event: JSON.parse(rawBody)
+    });
 
-      // 根据 customer_id 找到用户
-      const user = await env.DB.prepare(
-        'SELECT * FROM users WHERE stripe_customer_id = ?'
-      ).bind(customerId).first();
+    if (!verifyResult.ok || verifyResult.data.verification_status !== 'SUCCESS') {
+      console.error('Webhook verification failed:', verifyResult.data);
+      return json({ error: 'Invalid signature.' }, 401);
+    }
 
-      if (user) {
-        await updateUserPlan(env, user.id, {
+    const event = JSON.parse(rawBody);
+    console.log('PayPal webhook event:', event.event_type);
+
+    // 处理订阅相关事件
+    if (event.event_type === 'BILLING.SUBSCRIPTION.ACTIVATED' || 
+        event.event_type === 'BILLING.SUBSCRIPTION.CREATED') {
+      const subscription = event.resource;
+      const userId = subscription.custom_id;
+
+      if (userId) {
+        await updateUserPlan(env, userId, {
           plan: 'pro',
-          limit: 100, // Pro 计划每月 100 首
-          stripeCustomerId: customerId,
-          stripeSubscriptionId: subscriptionId
+          limit: 100,
+          stripeCustomerId: null,
+          stripeSubscriptionId: subscription.id
         });
+        console.log(`User ${userId} upgraded to Pro`);
       }
     }
 
-    if (event.type === 'customer.subscription.deleted') {
-      const subscription = event.data.object;
-      const customerId = subscription.customer;
+    if (event.event_type === 'BILLING.SUBSCRIPTION.CANCELLED' ||
+        event.event_type === 'BILLING.SUBSCRIPTION.EXPIRED' ||
+        event.event_type === 'BILLING.SUBSCRIPTION.SUSPENDED') {
+      const subscription = event.resource;
+      const userId = subscription.custom_id;
 
-      const user = await env.DB.prepare(
-        'SELECT * FROM users WHERE stripe_customer_id = ?'
-      ).bind(customerId).first();
-
-      if (user) {
-        await updateUserPlan(env, user.id, {
+      if (userId) {
+        await updateUserPlan(env, userId, {
           plan: 'free',
           limit: 3,
-          stripeCustomerId: customerId,
+          stripeCustomerId: null,
           stripeSubscriptionId: null
         });
+        console.log(`User ${userId} downgraded to Free`);
       }
     }
 
@@ -126,7 +168,7 @@ export async function handleStripeWebhook(request, env) {
   }
 }
 
-// 获取认证用户（从 auth.js 导入会有循环依赖，这里复制一份简化版）
+// ---------- 获取认证用户（简化版，避免循环依赖）----------
 async function getAuthUser(request, env) {
   const cookieHeader = request.headers.get('Cookie') || '';
   const match = cookieHeader.match(/session_id=([^;]+)/);
