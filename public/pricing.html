@@ -50,7 +50,7 @@
 
 <script>
 async function subscribe() {
-  const res = await fetch('/api/billing/checkout', {
+  const res = await fetch('api/billing/checkout', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ priceId: 'price_REPLACE_WITH_YOUR_STRIPE_PRICE_ID' })
