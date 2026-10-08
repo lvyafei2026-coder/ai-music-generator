@@ -44,3 +44,6 @@ persist = true
 
 [observability.issue_detection]
 enabled = false
+
+[limits]
+cpu_ms = 300000

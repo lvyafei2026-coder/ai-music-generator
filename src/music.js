@@ -1,68 +1,54 @@
 import { WorkflowEntrypoint } from 'cloudflare:workers';
-import { updateTaskRunId } from './db.js';
 
 export class MusicGenerationWorkflow extends WorkflowEntrypoint {
   async run(event, step) {
     const { taskId, userId, prompt, lyrics, isInstrumental } = event.payload;
 
-    // Step 1: 标记为 generating
     await step.do('mark-generating', async () => {
       await this.env.DB.prepare(
         `UPDATE music_tasks SET status = 'generating', updated_at = ? WHERE id = ?`
       ).bind(Date.now(), taskId).run();
     });
 
-    // Step 2: 发起后台生成请求，立即返回 run_id
-    const runId = await step.do('start-music-task', {
+    const audioResult = await step.do('generate-music', {
+      retries: { limit: 0 },
+      timeout: '15 minutes'
+    }, async () => {
+      const response = await this.env.AI.run('minimax/music-2.6', {
+        prompt: prompt,
+        is_instrumental: isInstrumental,
+        lyrics_optimizer: !lyrics,
+        ...(lyrics && lyrics.trim() ? { lyrics: lyrics } : {})
+      });
+
+      if (!response || !response.audio) {
+        throw new Error('No audio in response: ' + JSON.stringify(response).slice(0, 500));
+      }
+
+      return { audioUrl: response.audio };
+    });
+
+    const audioKey = await step.do('store-audio', {
       retries: { limit: 0 }
     }, async () => {
-      const response = await fetch(
-        `https://api.cloudflare.com/client/v4/accounts/${this.env.CF_ACCOUNT_ID}/ai/run`,
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${this.env.CF_AIG_TOKEN}`,
-            'Content-Type': 'application/json',
-            'cf-aig-gateway-id': this.env.AI_GATEWAY_ID
-          },
-          body: JSON.stringify({
-            model: 'minimax/music-2.6',
-            input: {
-              prompt: prompt,
-              is_instrumental: isInstrumental,
-              lyrics_optimizer: !lyrics,
-              ...(lyrics && lyrics.trim() ? { lyrics: lyrics } : {})
-            },
-            background: true,
-            webhookUrl: `${this.env.APP_URL}/api/music-webhook`
-          })
-        }
-      );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(`AI Gateway error ${response.status}: ${JSON.stringify(data).slice(0, 500)}`);
+      const audioRes = await fetch(audioResult.audioUrl);
+      if (!audioRes.ok) {
+        throw new Error(`Failed to download audio: ${audioRes.status}`);
       }
-
-      // 后台模式会立即返回 run_id
-      const id = data.result?.id || data.id;
-      if (!id) {
-        throw new Error('No run_id in response: ' + JSON.stringify(data).slice(0, 500));
-      }
-
-      return id;
+      const audioBuffer = await audioRes.arrayBuffer();
+      const key = `music/${userId}/${taskId}.mp3`;
+      await this.env.AUDIO.put(key, audioBuffer, {
+        httpMetadata: { contentType: 'audio/mpeg' }
+      });
+      return key;
     });
 
-    // Step 3: 把 run_id 写回数据库，供 Webhook 回调时关联任务
-    await step.do('save-run-id', async () => {
-      await updateTaskRunId(this.env, taskId, runId);
+    await step.do('mark-completed', async () => {
+      await this.env.DB.prepare(
+        `UPDATE music_tasks SET status = 'completed', audio_key = ?, updated_at = ? WHERE id = ?`
+      ).bind(audioKey, Date.now(), taskId).run();
     });
 
-    // 注意：这里不再等待生成结果。生成完成后，AI Gateway 会回调
-    // `/api/music-webhook`，由 index.js 里的 handleMusicWebhook 处理，
-    // 完成音频存储和任务状态更新。
-
-    return { taskId, runId };
+    return { taskId, audioKey };
   }
 }
