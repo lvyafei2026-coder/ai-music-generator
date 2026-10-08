@@ -12,7 +12,13 @@ export class MusicGenerationWorkflow extends WorkflowEntrypoint {
     });
 
     // Step 2: 调用 MiniMax Music 2.6
-    const audioResult = await step.do('generate-music', async () => {
+    const audioResult = await step.do('generate-music',{
+        retries: {
+          limit: 0,           // 最多重试 0 次（总共执行 1 次）
+          delay: '10 seconds', // 重试前等待 10 秒
+          backoff: 'linear'    // 固定间隔，不指数增长
+        }
+      }, async () => {
       const response = await this.env.AI.run(
         'minimax/music-2.6',
         {
