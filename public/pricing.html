@@ -50,14 +50,29 @@
 
 <script>
 async function subscribe() {
+  const meRes = await fetch('api/auth/me');
+  if (!meRes.ok) {
+    window.location.href = 'login.html';
+    return;
+  }
+
+  const meData = await meRes.json();
+  if (meData.user.plan === 'pro') {
+    alert('You are already on the Pro plan.');
+    window.location.href = 'dashboard.html';
+    return;
+  }
+
   const res = await fetch('api/billing/checkout', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ priceId: 'price_REPLACE_WITH_YOUR_STRIPE_PRICE_ID' })
+    headers: { 'Content-Type': 'application/json' }
   });
   const data = await res.json();
-  if (data.url) { window.location.href = data.url; }
-  else { alert(data.error || 'Could not start checkout.'); }
+  if (data.url) {
+    window.location.href = data.url;
+  } else {
+    alert(data.error || 'Could not start checkout.');
+  }
 }
 </script>
 </body>
