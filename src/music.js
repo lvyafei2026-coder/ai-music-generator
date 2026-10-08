@@ -16,30 +16,36 @@ export class MusicGenerationWorkflow extends WorkflowEntrypoint {
     const runId = await step.do('start-music-task', {
       retries: { limit: 0 }
     }, async () => {
-      const gatewayUrl = `https://api.cloudflare.com/client/v4/accounts/${this.env.CF_ACCOUNT_ID}/ai/run/@cf/minimax/music-2.6`;
-
-      const response = await fetch(gatewayUrl, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${this.env.CF_AIG_TOKEN}`,
-          'Content-Type': 'application/json',
-          'cf-aig-gateway-id': this.env.AI_GATEWAY_ID
-        },
-        body: JSON.stringify({
-          prompt: prompt,
-          lyrics: lyrics || undefined,
-          is_instrumental: isInstrumental,
-          lyrics_optimizer: !lyrics,
-          background: true,
-          webhookUrl: `${this.env.APP_URL}/api/music-webhook`
-        })
-      });
+      const response = await fetch(
+        `https://api.cloudflare.com/client/v4/accounts/${this.env.CF_ACCOUNT_ID}/ai/run`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${this.env.CF_AIG_TOKEN}`,
+            'Content-Type': 'application/json',
+            'cf-aig-gateway-id': this.env.AI_GATEWAY_ID
+          },
+          body: JSON.stringify({
+            model: 'minimax/music-2.6',
+            input: {
+              prompt: prompt,
+              is_instrumental: isInstrumental,
+              lyrics_optimizer: !lyrics,
+              ...(lyrics && lyrics.trim() ? { lyrics: lyrics } : {})
+            },
+            background: true,
+            webhookUrl: `${this.env.APP_URL}/api/music-webhook`
+          })
+        }
+      );
 
       const data = await response.json();
+
       if (!response.ok) {
-        throw new Error(`AI Gateway error ${response.status}: ${JSON.stringify(data)}`);
+        throw new Error(`AI Gateway error ${response.status}: ${JSON.stringify(data).slice(0, 500)}`);
       }
 
+      // 后台模式会立即返回 run_id
       const id = data.result?.id || data.id;
       if (!id) {
         throw new Error('No run_id in response: ' + JSON.stringify(data).slice(0, 500));
@@ -48,13 +54,14 @@ export class MusicGenerationWorkflow extends WorkflowEntrypoint {
       return id;
     });
 
-    // Step 3: 把 run_id 写回数据库
+    // Step 3: 把 run_id 写回数据库，供 Webhook 回调时关联任务
     await step.do('save-run-id', async () => {
       await updateTaskRunId(this.env, taskId, runId);
     });
 
     // 注意：这里不再等待生成结果。生成完成后，AI Gateway 会回调
-    // `/api/music-webhook`，由 index.js 里的 handleMusicWebhook 处理。
+    // `/api/music-webhook`，由 index.js 里的 handleMusicWebhook 处理，
+    // 完成音频存储和任务状态更新。
 
     return { taskId, runId };
   }
