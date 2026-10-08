@@ -86,3 +86,6 @@ p { margin: 0 0 14px; }
 .wrap.no-hero {
   margin-top: 40px;
 }
+.user-card { padding: 16px 20px; font-size: 0.9rem; }
+.user-card p { margin: 4px 0; color: var(--muted); }
+.user-card strong { color: var(--text); }

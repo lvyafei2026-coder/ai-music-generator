@@ -18,6 +18,10 @@
 </header>
 
 <main class="wrap no-hero">
+  <div class="card user-card">
+    <p>Signed in as: <strong id="userEmail">—</strong></p>
+    <p id="proStatus" style="display:none; color:#059669; font-weight:600;">✓ Pro subscription active</p>
+  </div>
   <div class="card usage-card">
     <div class="usage-header">
       <h2>Your Plan</h2>
@@ -63,15 +67,37 @@ async function loadUser() {
   if (!res.ok) { window.location.href = 'login.html'; return; }
   const data = await res.json();
   const u = data.user;
-  document.getElementById('planBadge').textContent = u.plan === 'pro' ? 'Pro' : 'Free';
-  document.getElementById('planBadge').className = 'plan-badge ' + (u.plan === 'pro' ? 'pro' : 'free');
+
+  // 显示邮箱
+  const emailEl = document.getElementById('userEmail');
+  if (emailEl) emailEl.textContent = u.email;
+
+  // 显示套餐
+  const isPro = u.plan === 'pro';
+  const badge = document.getElementById('planBadge');
+  badge.textContent = isPro ? 'Pro' : 'Free';
+  badge.className = 'plan-badge ' + (isPro ? 'pro' : 'free');
+
+  // 用量进度（修复了模板字符串的语法错误）
   const pct = u.generations_limit > 0 ? (u.generations_used / u.generations_limit * 100) : 0;
   document.getElementById('usageBar').style.width = Math.min(pct, 100) + '%';
-  document.getElementById('usageText').textContent = `${u.generations_used} / ${u.generations_limit} generations used this month`;
-  if (u.plan === 'pro') document.getElementById('upgradeBtn').style.display = 'none';
+  document.getElementById('usageText').textContent = 
+    u.generations_used + ' / ' + u.generations_limit + ' generations used this month';
+
+  // 订阅状态
+  const proStatus = document.getElementById('proStatus');
+  if (proStatus) {
+    proStatus.style.display = isPro ? 'block' : 'none';
+  }
+  if (isPro) {
+    document.getElementById('upgradeBtn').style.display = 'none';
+  }
+
+  // 用量到达上限
   if (u.generations_used >= u.generations_limit) {
-    document.getElementById('generateBtn').disabled = true;
-    document.getElementById('generateBtn').textContent = 'Limit reached — Upgrade to Pro';
+    const btn = document.getElementById('generateBtn');
+    btn.disabled = true;
+    btn.textContent = 'Limit reached — Upgrade to Pro';
   }
 }
 
