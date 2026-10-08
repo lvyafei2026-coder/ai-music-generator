@@ -80,6 +80,14 @@
       document.getElementById('dashboardLink').style.display = '';
     }
   }).catch(() => {});
+  // 检查登录状态，已登录则跳转到 dashboard
+  fetch('api/auth/me')
+    .then(r => r.ok ? r.json() : null)
+    .then(data => {
+      if (data && data.user) {
+        window.location.href = 'dashboard.html';
+      }
+  }).catch(() => {});
 </script>
 </body>
 </html>
