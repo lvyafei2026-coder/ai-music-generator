@@ -21,11 +21,6 @@ database_id = "1ad1ac7a-244a-4648-bd76-97b3d9643d72"
 binding = "AUDIO"
 bucket_name = "ai-music-audio"
 
-[[workflows]]
-name = "music-generation"
-binding = "MUSIC_WORKFLOW"
-class_name = "MusicGenerationWorkflow"
-
 [[ratelimits]]
 name = "AI_RATE_LIMITER"
 namespace_id = "1011"
@@ -44,3 +39,12 @@ persist = true
 
 [observability.issue_detection]
 enabled = false
+
+[[queues.producers]]
+binding = "MUSIC_QUEUE"
+queue = "music-generation"
+
+[[queues.consumers]]
+queue = "music-generation"
+max_batch_size = 1
+max_retries = 3

@@ -1,9 +1,7 @@
 import { handleSignup, handleLogin, handleLogout, handleMe, handleVerifyEmail, handleResendVerification, getCurrentUser } from './auth.js';
 import { handleCreateCheckout, handlePayPalWebhook } from './billing.js';
-import { MusicGenerationWorkflow } from './music.js';
 import { createMusicTask, getMusicTask, listUserTasks, incrementUsage } from './db.js';
-
-export { MusicGenerationWorkflow };
+import queueConsumer from './queue-consumer.js';
 
 function json(obj, status = 200) {
   return new Response(JSON.stringify(obj), {
@@ -34,6 +32,10 @@ export default {
     
     // 静态资源
     return env.ASSETS.fetch(request);
+  },
+
+  async queue(batch, env, ctx) {
+    return queueConsumer.queue(batch, env, ctx);
   }
 };
 
@@ -129,15 +131,12 @@ async function handleGenerate(request, env) {
     await incrementUsage(env, user.id);
 
     // 触发 Workflow
-    await env.MUSIC_WORKFLOW.create({
-      id: taskId,
-      params: {
-        taskId,
-        userId: user.id,
-        prompt,
-        lyrics,
-        isInstrumental
-      }
+    await env.MUSIC_QUEUE.send({
+      taskId,
+      userId: user.id,
+      prompt,
+      lyrics,
+      isInstrumental
     });
 
     return json({ taskId, status: 'pending' });
