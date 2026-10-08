@@ -192,6 +192,13 @@ async function doLogout() {
 
 loadUser();
 loadTasks();
+
+// 处理支付成功返回
+if (new URLSearchParams(window.location.search).get('success') === 'true') {
+  alert('Payment successful! Your Pro subscription is now active.');
+  // 清理 URL 参数，避免刷新时重复提示
+  window.history.replaceState({}, '', 'dashboard.html');
+}
 </script>
 </body>
 </html>
