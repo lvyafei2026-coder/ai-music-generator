@@ -90,14 +90,18 @@ async function handleApi(request, env, url) {
 
 // ==================== 音乐生成 ====================
 async function handleGenerate(request, env) {
+  console.log('[Generate] Request received');
   try {
     const user = await getCurrentUser(request, env);
     if (!user) {
+      console.log('[Generate] Not authenticated');
       return json({ error: 'Please sign in first.' }, 401);
     }
+    console.log('[Generate] User authenticated:', user.id);
 
     // 检查用量
     if (user.generations_used >= user.generations_limit) {
+      console.log('[Generate] Limit reached:', user.generations_used, '/', user.generations_limit);
       return json({
         error: 'You have reached your generation limit. Upgrade to Pro for more.',
         code: 'LIMIT_REACHED',
@@ -110,6 +114,7 @@ async function handleGenerate(request, env) {
     const ip = request.headers.get('cf-connecting-ip') || 'unknown';
     const { success } = await env.AI_RATE_LIMITER.limit({ key: 'music:' + ip });
     if (!success) {
+      console.log('[Generate] Rate limited:', ip);
       return json({ error: 'Too many requests. Please wait a minute.' }, 429);
     }
 
@@ -118,19 +123,28 @@ async function handleGenerate(request, env) {
     const lyrics = (body.lyrics || '').trim();
     const isInstrumental = !!body.isInstrumental;
 
+    console.log('[Generate] Payload:', { promptLength: prompt.length, hasLyrics: !!lyrics, isInstrumental });
+
     if (!prompt || prompt.length < 5) {
+      console.log('[Generate] Prompt too short');
       return json({ error: 'Please describe the music you want (at least 5 characters).' }, 400);
     }
     if (prompt.length > 500) {
+      console.log('[Generate] Prompt too long');
       return json({ error: 'Description must be under 500 characters.' }, 400);
     }
 
     const taskId = crypto.randomUUID();
+    console.log('[Generate] Creating task:', taskId);
 
     await createMusicTask(env, { id: taskId, userId: user.id, prompt, lyrics, isInstrumental });
-    await incrementUsage(env, user.id);
+    console.log('[Generate] Task created in D1');
 
-    // 触发 Workflow
+    await incrementUsage(env, user.id);
+    console.log('[Generate] Usage incremented');
+
+    // 推入 Queue
+    console.log('[Generate] Sending to Queue...');
     await env.MUSIC_QUEUE.send({
       taskId,
       userId: user.id,
@@ -138,11 +152,16 @@ async function handleGenerate(request, env) {
       lyrics,
       isInstrumental
     });
+    console.log('[Generate] Queue send completed:', taskId);
 
     return json({ taskId, status: 'pending' });
   } catch (err) {
-    console.error('Generate error:', err);
-    return json({ error: 'Could not start generation. Please try again.' }, 500);
+    console.error('[Generate] Fatal error:', {
+      message: err.message,
+      name: err.name,
+      stack: err.stack
+    });
+    return json({ error: 'Could not start generation. Please try again.', detail: err.message }, 500);
   }
 }
 
