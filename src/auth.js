@@ -164,10 +164,19 @@ export async function handleLogin(request, env) {
       return json({ error: 'Invalid email or password.' }, 401);
     }
 
+    // 校验密码
     const [storedHash, salt] = user.password_hash.split(':');
     const inputHash = await hashPassword(password, salt);
     if (inputHash !== storedHash) {
       return json({ error: 'Invalid email or password.' }, 401);
+    }
+
+    // 校验邮箱验证状态
+    if (!user.email_verified) {
+      return json({
+        error: 'Please verify your email before signing in. Check your inbox for the verification link.',
+        code: 'EMAIL_NOT_VERIFIED'
+      }, 403);
     }
 
     const sessionId = generateId('ses');
@@ -179,7 +188,13 @@ export async function handleLogin(request, env) {
 
     return new Response(JSON.stringify({
       success: true,
-      user: { id: user.id, email: user.email, plan: user.plan, generations_used: user.generations_used, generations_limit: user.generations_limit }
+      user: {
+        id: user.id,
+        email: user.email,
+        plan: user.plan,
+        generations_used: user.generations_used,
+        generations_limit: user.generations_limit
+      }
     }), {
       status: 200,
       headers: { 'Content-Type': 'application/json', ...Object.fromEntries(headers) }
@@ -233,4 +248,28 @@ export async function handleMe(request, env) {
       generations_limit: user.generations_limit
     }
   });
+}
+
+export async function handleResendVerification(request, env) {
+  try {
+    const body = await request.json();
+    const email = (body.email || '').trim().toLowerCase();
+
+    const user = await findUserByEmail(env, email);
+    if (!user || user.email_verified) {
+      return json({ message: 'If this email exists and is unverified, a new link has been sent.' });
+    }
+
+    const token = crypto.randomUUID();
+    const expiresAt = Date.now() + 3600 * 1000;
+    await env.DB.prepare(
+      'INSERT INTO email_verification_tokens (token, user_id, expires_at, created_at) VALUES (?, ?, ?, ?)'
+    ).bind(token, user.id, expiresAt, Date.now()).run();
+
+    await sendVerificationEmail(env, email, token);
+    return json({ message: 'Verification email resent. Please check your inbox.' });
+  } catch (err) {
+    console.error('Resend verification error:', err);
+    return json({ error: 'Could not resend verification email.' }, 500);
+  }
 }

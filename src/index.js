@@ -1,4 +1,4 @@
-import { handleSignup, handleLogin, handleLogout, handleMe, handleVerifyEmail } from './auth.js';
+import { handleSignup, handleLogin, handleLogout, handleMe, handleVerifyEmail,handleResendVerification } from './auth.js';
 import { handleCreateCheckout, handlePayPalWebhook } from './billing.js';
 import { MusicGenerationWorkflow } from './music.js';
 import { createMusicTask, getMusicTask, listUserTasks, incrementUsage } from './db.js';
@@ -23,7 +23,7 @@ export default {
     }
 
     // 内部重写：无扩展名的页面路径 → .html 文件
-    const pageRoutes = ['/dashboard', '/login', '/pricing', '/index'];
+    const pageRoutes = ['/dashboard', '/login', '/pricing', '/index', '/verify-email'];
     const lastSegment = path.split('/').pop();
     
     if (pageRoutes.includes('/' + lastSegment)) {
@@ -56,6 +56,9 @@ async function handleApi(request, env, url) {
   }
   if (path.endsWith('/api/auth/verify-email') && method === 'GET') {
     return handleVerifyEmail(request, env, url);
+  }
+  if (path.endsWith('/api/auth/resend-verification') && method === 'POST') {
+    return handleResendVerification(request, env);
   }
 
   // ==================== 支付相关（PayPal 沙箱） ====================
