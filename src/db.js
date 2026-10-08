@@ -13,8 +13,8 @@ export async function findUserById(env, id) {
 export async function createUser(env, { id, email, passwordHash }) {
   const now = Date.now();
   await env.DB.prepare(
-    `INSERT INTO users (id, email, password_hash, plan, generations_limit, created_at, updated_at)
-     VALUES (?, ?, ?, 'free', 3, ?, ?)`
+    `INSERT INTO users (id, email, password_hash, plan, generations_limit, email_verified, created_at, updated_at)
+     VALUES (?, ?, ?, 'free', 3, 0, ?, ?)`
   ).bind(id, email.toLowerCase(), passwordHash, now, now).run();
   return findUserById(env, id);
 }

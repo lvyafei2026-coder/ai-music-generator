@@ -70,8 +70,19 @@ async function doSignup() {
     body: JSON.stringify({ email, password })
   });
   const data = await res.json();
-  if (res.ok) { window.location.href = 'dashboard.html'; }
-  else { document.getElementById('signupError').textContent = data.error; document.getElementById('signupError').style.display = 'block'; }
+  if (res.ok && data.requiresVerification) {
+    // 注册成功，显示验证提示
+    document.getElementById('signupForm').innerHTML = `
+      <div style="text-align:center; padding: 20px;">
+        <h3>Check your email</h3>
+        <p>We've sent a verification link to <strong>${email}</strong>.</p>
+        <p>Click the link in the email to activate your account.</p>
+      </div>
+    `;
+  } else {
+    document.getElementById('signupError').textContent = data.error;
+    document.getElementById('signupError').style.display = 'block';
+  }
 }
 </script>
 </body>

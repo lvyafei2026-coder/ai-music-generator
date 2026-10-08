@@ -1,4 +1,4 @@
-import { handleSignup, handleLogin, handleLogout, handleMe, getCurrentUser } from './auth.js';
+import { handleSignup, handleLogin, handleLogout, handleMe, handleVerifyEmail } from './auth.js';
 import { handleCreateCheckout, handlePayPalWebhook } from './billing.js';
 import { MusicGenerationWorkflow } from './music.js';
 import { createMusicTask, getMusicTask, listUserTasks, incrementUsage } from './db.js';
@@ -53,6 +53,9 @@ async function handleApi(request, env, url) {
   }
   if (path.endsWith('/api/auth/me') && method === 'GET') {
     return handleMe(request, env);
+  }
+  if (path.endsWith('/api/auth/verify-email') && method === 'GET') {
+    return handleVerifyEmail(request, env, url);
   }
 
   // ==================== 支付相关（PayPal 沙箱） ====================

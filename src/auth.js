@@ -36,6 +36,36 @@ function setCookie(headers, name, value, maxAge) {
   );
 }
 
+// 新增：发送验证邮件
+async function sendVerificationEmail(env, email, token) {
+  const verifyUrl = `${env.APP_URL}/verify-email?token=${token}`;
+  
+  const res = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${env.RESEND_API_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      from: 'AI Music Generator <noreply@toolara.dev>',
+      to: [email],
+      subject: 'Verify your email address',
+      html: `
+        <h2>Welcome to AI Music Generator!</h2>
+        <p>Please click the link below to verify your email address:</p>
+        <a href="${verifyUrl}" style="display:inline-block;padding:12px 24px;background:#0f766e;color:#fff;text-decoration:none;border-radius:8px;">Verify Email</a>
+        <p>This link expires in 1 hour.</p>
+      `
+    })
+  });
+  
+  if (!res.ok) {
+    const error = await res.text();
+    console.error('Resend error:', error);
+    throw new Error('Failed to send verification email');
+  }
+}
+
 // 注册
 export async function handleSignup(request, env) {
   try {
@@ -59,26 +89,62 @@ export async function handleSignup(request, env) {
     const passwordHash = await hashPassword(password, salt) + ':' + salt;
     const userId = generateId('usr');
 
+    // 创建用户（email_verified 默认为 0）
     const user = await createUser(env, { id: userId, email, passwordHash });
 
-    // 自动登录
-    const sessionId = generateId('ses');
-    const expiresAt = Date.now() + SESSION_TTL;
-    await createSession(env, { id: sessionId, userId, expiresAt });
+    // 生成验证令牌（1小时有效期）
+    const token = crypto.randomUUID();
+    const expiresAt = Date.now() + 3600 * 1000;
+    await env.DB.prepare(
+      'INSERT INTO email_verification_tokens (token, user_id, expires_at, created_at) VALUES (?, ?, ?, ?)'
+    ).bind(token, userId, expiresAt, Date.now()).run();
 
-    const headers = new Headers();
-    setCookie(headers, SESSION_COOKIE, sessionId, SESSION_TTL / 1000);
+    // 发送验证邮件
+    await sendVerificationEmail(env, email, token);
 
-    return new Response(JSON.stringify({
+    // 不直接登录，返回提示信息
+    return json({
       success: true,
-      user: { id: user.id, email: user.email, plan: user.plan }
-    }), {
-      status: 201,
-      headers: { 'Content-Type': 'application/json', ...Object.fromEntries(headers) }
-    });
+      message: 'Account created. Please check your email to verify your account.',
+      requiresVerification: true
+    }, 201);
   } catch (err) {
     console.error('Signup error:', err);
     return json({ error: 'Registration failed. Please try again.' }, 500);
+  }
+}
+
+// 新增：验证邮箱
+export async function handleVerifyEmail(request, env, url) {
+  try {
+    const token = url.searchParams.get('token');
+    if (!token) {
+      return json({ error: 'Missing verification token.' }, 400);
+    }
+
+    // 查找令牌
+    const tokenRecord = await env.DB.prepare(
+      'SELECT * FROM email_verification_tokens WHERE token = ? AND expires_at > ? AND used_at IS NULL'
+    ).bind(token, Date.now()).first();
+
+    if (!tokenRecord) {
+      return json({ error: 'Invalid or expired verification link.' }, 400);
+    }
+
+    // 标记用户为已验证
+    await env.DB.prepare(
+      'UPDATE users SET email_verified = 1, updated_at = ? WHERE id = ?'
+    ).bind(Date.now(), tokenRecord.user_id).run();
+
+    // 标记令牌为已使用
+    await env.DB.prepare(
+      'UPDATE email_verification_tokens SET used_at = ? WHERE token = ?'
+    ).bind(Date.now(), token).run();
+
+    return json({ success: true, message: 'Email verified successfully.' });
+  } catch (err) {
+    console.error('Verify email error:', err);
+    return json({ error: 'Verification failed. Please try again.' }, 500);
   }
 }
 
