@@ -140,21 +140,54 @@ export async function handlePayPalWebhook(request, env) {
     const event = JSON.parse(rawBody);
     console.log('PayPal webhook event:', event.event_type);
 
-    // 处理订阅相关事件
-    if (event.event_type === 'BILLING.SUBSCRIPTION.ACTIVATED') {
-      const subscription = event.resource;
-      const userId = subscription.custom_id;
+    // 处理订阅激活和首次付款
+    if (event.event_type === 'BILLING.SUBSCRIPTION.ACTIVATED' || 
+        event.event_type === 'PAYMENT.SALE.COMPLETED') {
+      const resource = event.resource;
       
-      if (userId) {
-        // 主动查询确认状态
-        const isActive = await verifySubscription(env, subscription.id);
-        if (isActive) {
-          await updateUserPlan(env, userId, {
-            plan: 'pro',
-            limit: 100,
-            stripeSubscriptionId: subscription.id
+      // 从 resource 里找到关联的订阅 ID 和 custom_id
+      // PAYMENT.SALE.COMPLETED 事件里，custom_id 可能在 resource.custom 或 resource.custom_id
+      const subscriptionId = resource.billing_agreement_id || resource.id;
+      const customId = resource.custom || resource.custom_id;
+      
+      console.log('Processing payment event:', {
+        eventType: event.event_type,
+        subscriptionId,
+        customId
+      });
+
+      // 如果事件里没有 custom_id，需要通过订阅 ID 反查用户
+      let userId = customId;
+      
+      if (!userId && subscriptionId) {
+        // 用订阅 ID 查 PayPal API 获取订阅详情，从中取出 custom_id
+        try {
+          const token = await getPayPalAccessToken(env);
+          const subRes = await fetch(
+            `https://api-m.sandbox.paypal.com/v1/billing/subscriptions/${subscriptionId}`,
+            { headers: { 'Authorization': `Bearer ${token}` } }
+          );
+          const subData = await subRes.json();
+          userId = subData.custom_id;
+          console.log('Fetched subscription details:', {
+            status: subData.status,
+            customId: userId
           });
+        } catch (err) {
+          console.error('Failed to fetch subscription:', err);
         }
+      }
+
+      if (userId) {
+        await updateUserPlan(env, userId, {
+          plan: 'pro',
+          limit: 100,
+          stripeCustomerId: null,
+          stripeSubscriptionId: subscriptionId
+        });
+        console.log(`User ${userId} upgraded to Pro via ${event.event_type}`);
+      } else {
+        console.error('No user_id found in webhook event');
       }
     }
 
