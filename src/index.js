@@ -22,6 +22,16 @@ export default {
       return handleApi(request, env, url);
     }
 
+    // 内部重写：无扩展名的页面路径 → .html 文件
+    const pageRoutes = ['/dashboard', '/login', '/pricing', '/index'];
+    const lastSegment = path.split('/').pop();
+    
+    if (pageRoutes.includes('/' + lastSegment)) {
+      const newUrl = new URL(request.url);
+      newUrl.pathname = path + '.html';
+      return env.ASSETS.fetch(new Request(newUrl, request));
+    }
+    
     // 静态资源
     return env.ASSETS.fetch(request);
   }
