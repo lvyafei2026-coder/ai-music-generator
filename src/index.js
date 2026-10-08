@@ -192,8 +192,13 @@ async function handleListTasks(request, env) {
       }))
     });
   } catch (err) {
-    console.error('List tasks error:', err);
-    return json({ error: 'Could not load tasks.' }, 500);
+    console.error('List tasks error:', {
+      message: err.message,
+      code: err.code,
+      name: err.name,
+      stack: err.stack
+    });
+    return json({ error: 'Could not load tasks.', detail: err.message }, 500);
   }
 }
 
