@@ -30,3 +30,17 @@ class_name = "MusicGenerationWorkflow"
 name = "AI_RATE_LIMITER"
 namespace_id = "1011"
 simple = { limit = 30, period = 60 }
+
+[observability.logs]
+enabled = true
+head_sampling_rate = 1
+invocation_logs = true
+persist = true
+
+[observability.traces]
+enabled = false
+head_sampling_rate = 1
+persist = true
+
+[observability.issue_detection]
+enabled = false

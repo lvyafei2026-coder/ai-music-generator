@@ -68,8 +68,8 @@ export async function handleCreateCheckout(request, env) {
         locale: 'en-US',
         shipping_preference: 'NO_SHIPPING',
         user_action: 'SUBSCRIBE_NOW',
-        return_url: `${env.APP_URL}/dashboard?success=true`,
-        cancel_url: `${env.APP_URL}/pricing?canceled=true`
+        return_url: `${env.APP_URL}/dashboard.html?success=true`,
+        cancel_url: `${env.APP_URL}/pricing.html?canceled=true`
       }
     });
 
