@@ -1,4 +1,4 @@
-import { handleSignup, handleLogin, handleLogout, handleMe, handleVerifyEmail,handleResendVerification } from './auth.js';
+import { handleSignup, handleLogin, handleLogout, handleMe, handleVerifyEmail, handleResendVerification, getCurrentUser } from './auth.js';
 import { handleCreateCheckout, handlePayPalWebhook } from './billing.js';
 import { MusicGenerationWorkflow } from './music.js';
 import { createMusicTask, getMusicTask, listUserTasks, incrementUsage } from './db.js';
