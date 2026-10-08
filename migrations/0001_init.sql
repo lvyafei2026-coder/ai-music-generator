@@ -55,3 +55,7 @@ CREATE TABLE IF NOT EXISTS email_verification_tokens (
 );
 
 CREATE INDEX IF NOT EXISTS idx_verify_tokens_user ON email_verification_tokens(user_id);
+
+ALTER TABLE music_tasks ADD COLUMN run_id TEXT;
+
+CREATE INDEX IF NOT EXISTS idx_tasks_run_id ON music_tasks(run_id);

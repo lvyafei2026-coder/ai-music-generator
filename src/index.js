@@ -68,6 +68,9 @@ async function handleApi(request, env, url) {
   if (path.endsWith('/api/billing/webhook') && method === 'POST') {
     return handlePayPalWebhook(request, env);
   }
+  if (path.endsWith('/api/music-webhook') && method === 'POST') {
+    return handleMusicWebhook(request, env);
+  }
 
   // ==================== 音乐生成相关 ====================
   if (path.endsWith('/api/generate') && method === 'POST') {
@@ -227,5 +230,62 @@ async function handleGetAudio(request, env, url) {
   } catch (err) {
     console.error('Get audio error:', err);
     return json({ error: 'Could not load audio.' }, 500);
+  }
+}
+
+async function handleMusicWebhook(request, env) {
+  try {
+    const body = await request.json();
+    console.log('Music webhook received:', JSON.stringify(body).slice(0, 500));
+
+    const runId = body.id || body.run_id;
+    if (!runId) {
+      console.error('No run_id in webhook body');
+      return json({ received: true });
+    }
+
+    // 找到对应的任务
+    const task = await env.DB.prepare(
+      'SELECT * FROM music_tasks WHERE run_id = ?'
+    ).bind(runId).first();
+
+    if (!task) {
+      console.error('No task found for runId:', runId);
+      return json({ received: true });
+    }
+
+    // 提取音频数据
+    const audioHex = body.result?.audio || body.audio;
+    if (!audioHex) {
+      console.error('No audio data in webhook:', JSON.stringify(body).slice(0, 500));
+      await env.DB.prepare(
+        `UPDATE music_tasks SET status = 'failed', error = ?, updated_at = ? WHERE id = ?`
+      ).bind('No audio data in webhook', Date.now(), task.id).run();
+      return json({ received: true });
+    }
+
+    // 将 hex 字符串转为二进制
+    const len = audioHex.length;
+    const bytes = new Uint8Array(len / 2);
+    for (let i = 0; i < len; i += 2) {
+      bytes[i / 2] = parseInt(audioHex.substr(i, 2), 16);
+    }
+
+    // 存入 R2
+    const key = `music/${task.user_id}/${task.id}.mp3`;
+    await env.AUDIO.put(key, bytes, {
+      httpMetadata: { contentType: 'audio/mpeg' }
+    });
+
+    // 更新任务状态为完成
+    await env.DB.prepare(
+      `UPDATE music_tasks SET status = 'completed', audio_key = ?, updated_at = ? WHERE id = ?`
+    ).bind(key, Date.now(), task.id).run();
+
+    console.log('Music task completed:', task.id);
+    return json({ received: true });
+  } catch (err) {
+    console.error('Music webhook error:', err);
+    return json({ error: 'Webhook processing failed' }, 500);
   }
 }

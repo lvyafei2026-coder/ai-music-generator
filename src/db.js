@@ -81,3 +81,15 @@ export async function listUserTasks(env, userId, limit = 20) {
   ).bind(userId, limit).all();
   return results || [];
 }
+
+export async function updateTaskRunId(env, taskId, runId) {
+  await env.DB.prepare(
+    'UPDATE music_tasks SET run_id = ?, updated_at = ? WHERE id = ?'
+  ).bind(runId, Date.now(), taskId).run();
+}
+
+export async function getTaskByRunId(env, runId) {
+  return env.DB.prepare(
+    'SELECT * FROM music_tasks WHERE run_id = ?'
+  ).bind(runId).first();
+}
