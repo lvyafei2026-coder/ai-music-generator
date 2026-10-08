@@ -91,6 +91,19 @@ export async function handleCreateCheckout(request, env) {
   }
 }
 
+// 收到 ACTIVATED 事件后，主动查询订阅状态
+async function verifySubscription(env, subscriptionId) {
+  const token = await getPayPalAccessToken(env);
+  const res = await fetch(
+    `https://api-m.sandbox.paypal.com/v1/billing/subscriptions/${subscriptionId}`,
+    {
+      headers: { 'Authorization': `Bearer ${token}` }
+    }
+  );
+  const data = await res.json();
+  return data.status === 'ACTIVE';
+}
+
 // ---------- 处理 PayPal Webhook ----------
 export async function handlePayPalWebhook(request, env) {
   try {
@@ -128,19 +141,20 @@ export async function handlePayPalWebhook(request, env) {
     console.log('PayPal webhook event:', event.event_type);
 
     // 处理订阅相关事件
-    if (event.event_type === 'BILLING.SUBSCRIPTION.ACTIVATED' || 
-        event.event_type === 'BILLING.SUBSCRIPTION.CREATED') {
+    if (event.event_type === 'BILLING.SUBSCRIPTION.ACTIVATED') {
       const subscription = event.resource;
       const userId = subscription.custom_id;
-
+      
       if (userId) {
-        await updateUserPlan(env, userId, {
-          plan: 'pro',
-          limit: 100,
-          stripeCustomerId: null,
-          stripeSubscriptionId: subscription.id
-        });
-        console.log(`User ${userId} upgraded to Pro`);
+        // 主动查询确认状态
+        const isActive = await verifySubscription(env, subscription.id);
+        if (isActive) {
+          await updateUserPlan(env, userId, {
+            plan: 'pro',
+            limit: 100,
+            stripeSubscriptionId: subscription.id
+          });
+        }
       }
     }
 
