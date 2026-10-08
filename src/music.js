@@ -11,7 +11,7 @@ export class MusicGenerationWorkflow extends WorkflowEntrypoint {
       ).bind(Date.now(), taskId).run();
     });
 
-    // Step 2: 调用 MiniMax 音乐生成 API（通过 AI Gateway BYOK）
+    // Step 2: 调用 MiniMax 音乐生成 API（同步接口，直接返回音频）
     const audioResult = await step.do('generate-music', {
       retries: { limit: 0 }  // 不重试，避免重复扣费
     }, async () => {
@@ -27,21 +27,25 @@ export class MusicGenerationWorkflow extends WorkflowEntrypoint {
         }
       };
 
-      // 有自定义歌词时传入，否则让 AI 自动生成
+      // 有自定义歌词时传入
       if (lyrics && lyrics.trim()) {
         payload.lyrics = lyrics;
       }
 
-      // 纯器乐模式（MiniMax 可能不支持，先注释掉，按实际文档调整）
-      // if (isInstrumental) {
-      //   payload.is_instrumental = true;
-      // }
+      // 纯器乐模式（MiniMax 支持 is_instrumental 参数）
+      if (isInstrumental) {
+        payload.is_instrumental = true;
+      } else if (!lyrics || !lyrics.trim()) {
+        // 没有歌词且不是纯器乐，让 AI 自动生成歌词
+        payload.lyrics_optimizer = true;
+      }
 
       const response = await fetch(gatewayUrl, {
         method: 'POST',
         headers: {
           'cf-aig-authorization': `Bearer ${this.env.CF_AIG_TOKEN}`,
           'Content-Type': 'application/json'
+          // 注意：不要加 Authorization 头，BYOK 会自动替换
         },
         body: JSON.stringify(payload)
       });
@@ -53,34 +57,45 @@ export class MusicGenerationWorkflow extends WorkflowEntrypoint {
 
       const data = await response.json();
 
-      // MiniMax 返回的音频数据通常在 data.data.audio 字段（base64 编码）
-      // 具体字段名以 MiniMax 官方文档为准
-      const audioBase64 = data?.data?.audio || data?.audio;
+      // 检查 MiniMax 的业务错误码
+      if (data?.base_resp?.status_code !== 0) {
+        throw new Error(`MiniMax error ${data.base_resp.status_code}: ${data.base_resp.status_msg}`);
+      }
 
-      if (!audioBase64) {
+      // 音频数据可能是 hex 编码的字符串，也可能是 URL
+      const audioData = data?.data?.audio;
+      const audioUrl = data?.data?.audio_url;
+
+      if (!audioData && !audioUrl) {
         throw new Error('No audio data in MiniMax response: ' + JSON.stringify(data).slice(0, 500));
       }
 
-      return { audioBase64 };
+      return { audioData, audioUrl };
     });
 
-    // Step 3: 解码 base64 并存入 R2
+    // Step 3: 处理音频并存入 R2
     const audioKey = await step.do('store-audio', async () => {
-      const { audioBase64 } = audioResult;
+      const { audioData, audioUrl } = audioResult;
+      let bytes;
 
-      // 将 base64 转为二进制
-      const binaryString = atob(audioBase64);
-      const bytes = new Uint8Array(binaryString.length);
-      for (let i = 0; i < binaryString.length; i++) {
-        bytes[i] = binaryString.charCodeAt(i);
+      if (audioData) {
+        // hex 编码：转为二进制
+        const hexString = audioData;
+        const len = hexString.length;
+        bytes = new Uint8Array(len / 2);
+        for (let i = 0; i < len; i += 2) {
+          bytes[i / 2] = parseInt(hexString.substr(i, 2), 16);
+        }
+      } else if (audioUrl) {
+        // URL：直接下载
+        const audioRes = await fetch(audioUrl);
+        bytes = new Uint8Array(await audioRes.arrayBuffer());
       }
 
       const key = `music/${userId}/${taskId}.mp3`;
-
       await this.env.AUDIO.put(key, bytes, {
         httpMetadata: { contentType: 'audio/mpeg' }
       });
-
       return key;
     });
 
