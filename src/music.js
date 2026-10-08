@@ -1,5 +1,8 @@
 import { WorkflowEntrypoint } from 'cloudflare:workers';
 
+const REPLICATE_API = 'https://api.replicate.com/v1';
+const MODEL_VERSION = 'minimax/music-2.6'; // 使用模型名称
+
 export class MusicGenerationWorkflow extends WorkflowEntrypoint {
   async run(event, step) {
     const { taskId, userId, prompt, lyrics, isInstrumental } = event.payload;
@@ -11,96 +14,92 @@ export class MusicGenerationWorkflow extends WorkflowEntrypoint {
       ).bind(Date.now(), taskId).run();
     });
 
-    // Step 2: 通过 AI Gateway BYOK 调用 MiniMax
-    // 关键：timeout 设为 15 分钟，覆盖 MiniMax 同步生成的全部时间
-    const audioResult = await step.do('generate-music', {
+    // Step 2: 创建 Replicate Prediction（短请求，立即返回 prediction ID）
+    const predictionId = await step.do('create-prediction', {
       retries: { limit: 0 },
-      timeout: '15 minutes'
+      timeout: '30 seconds'
     }, async () => {
-      const gatewayUrl = `https://gateway.ai.cloudflare.com/v1/${this.env.CF_ACCOUNT_ID}/${this.env.AI_GATEWAY_ID}/custom-minimax/v1/music_generation`;
-
-      const payload = {
-        model: 'music-2.6',
+      const input = {
         prompt: prompt,
         is_instrumental: isInstrumental,
-        lyrics_optimizer: !lyrics,
-        audio_setting: {
-          sample_rate: 44100,
-          bitrate: 256000,
-          format: 'mp3'
-        }
+        lyrics_optimizer: !lyrics
       };
-
-      // 有自定义歌词时传入
       if (lyrics && lyrics.trim()) {
-        payload.lyrics = lyrics;
+        input.lyrics = lyrics;
       }
 
-      const response = await fetch(gatewayUrl, {
+      const response = await fetch(`${REPLICATE_API}/models/${MODEL_VERSION}/predictions`, {
         method: 'POST',
         headers: {
-          // 只带 Cloudflare 网关的认证头
-          'cf-aig-authorization': `Bearer ${this.env.CF_AIG_TOKEN}`,
-          'Content-Type': 'application/json'
-          // 注意：不要带 Authorization 头，BYOK 会自动替换为存储的 MiniMax Key
+          'Authorization': `Bearer ${this.env.REPLICATE_API_TOKEN}`,
+          'Content-Type': 'application/json',
+          'Prefer': 'wait=3' // 最多等待 3 秒，超时则返回 prediction ID
         },
-        body: JSON.stringify(payload)
+        body: JSON.stringify({ input })
       });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`MiniMax API error ${response.status}: ${errorText.slice(0, 500)}`);
-      }
-
       const data = await response.json();
-
-      // 检查 MiniMax 的业务错误码
-      if (data?.base_resp?.status_code !== 0) {
-        throw new Error(`MiniMax error ${data.base_resp.status_code}: ${data.base_resp.status_msg}`);
+      if (!response.ok) {
+        throw new Error(`Replicate error: ${JSON.stringify(data).slice(0, 300)}`);
       }
 
-      // 音频数据可能是 hex 编码的字符串，也可能是 URL
-      const audioData = data?.data?.audio;
-      const audioUrl = data?.data?.audio_url;
-
-      if (!audioData && !audioUrl) {
-        throw new Error('No audio in response: ' + JSON.stringify(data).slice(0, 500));
+      // 如果 3 秒内已完成，直接返回结果；否则返回 prediction ID 用于轮询
+      if (data.status === 'succeeded' && data.output) {
+        return { done: true, output: data.output };
       }
-
-      return { audioData, audioUrl };
+      return { done: false, predictionId: data.id };
     });
 
-    // Step 3: 处理音频并存入 R2
+    // 如果创建时已经完成，直接进入存储步骤
+    let audioUrl = null;
+    if (predictionId.done) {
+      audioUrl = Array.isArray(predictionId.output) ? predictionId.output[0] : predictionId.output;
+    } else {
+      // Step 3: 轮询直到完成（每次都是短 GET）
+      for (let i = 0; i < 30; i++) {
+        await step.sleep('wait-for-generation', '10 seconds');
+
+        const result = await step.do(`poll-${i}`, {
+          retries: { limit: 0 },
+          timeout: '30 seconds'
+        }, async () => {
+          const res = await fetch(`${REPLICATE_API}/predictions/${predictionId.predictionId}`, {
+            headers: { 'Authorization': `Bearer ${this.env.REPLICATE_API_TOKEN}` }
+          });
+          return await res.json();
+        });
+
+        if (result.status === 'succeeded' && result.output) {
+          audioUrl = Array.isArray(result.output) ? result.output[0] : result.output;
+          break;
+        }
+        if (result.status === 'failed' || result.status === 'canceled') {
+          throw new Error(`Generation ${result.status}: ${result.error || 'unknown'}`);
+        }
+      }
+    }
+
+    if (!audioUrl) {
+      throw new Error('Generation timed out');
+    }
+
+    // Step 4: 下载音频并存入 R2
     const audioKey = await step.do('store-audio', {
       retries: { limit: 0 }
     }, async () => {
-      const { audioData, audioUrl } = audioResult;
-      let bytes;
-
-      if (audioData) {
-        // hex 编码：转为二进制
-        const len = audioData.length;
-        bytes = new Uint8Array(len / 2);
-        for (let i = 0; i < len; i += 2) {
-          bytes[i / 2] = parseInt(audioData.substr(i, 2), 16);
-        }
-      } else if (audioUrl) {
-        // URL：直接下载
-        const audioRes = await fetch(audioUrl);
-        if (!audioRes.ok) {
-          throw new Error(`Failed to download audio: ${audioRes.status}`);
-        }
-        bytes = new Uint8Array(await audioRes.arrayBuffer());
+      const audioRes = await fetch(audioUrl);
+      if (!audioRes.ok) {
+        throw new Error(`Failed to download audio: ${audioRes.status}`);
       }
-
+      const audioBuffer = await audioRes.arrayBuffer();
       const key = `music/${userId}/${taskId}.mp3`;
-      await this.env.AUDIO.put(key, bytes, {
+      await this.env.AUDIO.put(key, audioBuffer, {
         httpMetadata: { contentType: 'audio/mpeg' }
       });
       return key;
     });
 
-    // Step 4: 更新任务状态为 completed
+    // Step 5: 更新任务状态为 completed
     await step.do('mark-completed', async () => {
       await this.env.DB.prepare(
         `UPDATE music_tasks SET status = 'completed', audio_key = ?, updated_at = ? WHERE id = ?`
