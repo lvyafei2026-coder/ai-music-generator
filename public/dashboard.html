@@ -298,11 +298,12 @@ function renderTasks() {
         '<div class="task-prompt">' + escapeHtml(task.prompt).slice(0, 100) + '</div>' +
         '<div class="task-status ' + task.status + '">' + statusLabel(task.status) + '</div>' +
       '</div>' +
-      (url ? '<audio controls src="' + url + '"></audio>' : '') +
+      (url ? '<div class="task-audio-wrap"><audio controls src="' + url + '" data-task-audio="' + task.id + '"></audio><canvas class="task-waveform" data-task-wave="' + task.id + '" width="600" height="40"></canvas></div>' : '') +
       '<div class="task-links">' + detailLink + reuseLink + shareLink + '</div>' +
       detail +
     '</div>';
   }).join('');
+  bindWaveforms();
 }
 
 function statusLabelSafe(key, fallback) {
@@ -316,6 +317,98 @@ function toggleTaskDetail(taskId) {
   var visible = el.style.display !== 'none';
   el.style.display = visible ? 'none' : 'block';
   link.textContent = visible ? t('taskDetails', 'Details') : t('taskHide', 'Hide');
+}
+
+// ==================== 音频波形图 ====================
+function initWaveform(audioEl, canvas) {
+  var ctx2d = canvas.getContext('2d');
+  var audioCtx = null;
+  var analyser = null;
+  var source = null;
+  var rafId = null;
+  var W = canvas.width;
+  var H = canvas.height;
+
+  function drawIdle() {
+    ctx2d.clearRect(0, 0, W, H);
+    ctx2d.strokeStyle = 'rgba(168,85,247,0.4)';
+    ctx2d.lineWidth = 1;
+    ctx2d.beginPath();
+    ctx2d.moveTo(0, H / 2);
+    ctx2d.lineTo(W, H / 2);
+    ctx2d.stroke();
+  }
+
+  function draw() {
+    if (!analyser) return;
+    var buf = new Uint8Array(analyser.frequencyBinCount);
+    analyser.getByteFrequencyData(buf);
+
+    ctx2d.clearRect(0, 0, W, H);
+    var bars = 80;
+    var step = Math.floor(buf.length / bars);
+    var barW = W / bars;
+
+    for (var i = 0; i < bars; i++) {
+      var v = 0;
+      for (var j = 0; j < step; j++) {
+        v = Math.max(v, buf[i * step + j]);
+      }
+      var h = (v / 255) * H;
+      if (h < 2) h = 2;
+      var x = i * barW;
+      var y = (H - h) / 2;
+      var grad = ctx2d.createLinearGradient(0, y, 0, y + h);
+      grad.addColorStop(0, '#c9b5ff');
+      grad.addColorStop(1, '#ec4899');
+      ctx2d.fillStyle = grad;
+      ctx2d.fillRect(x + 1, y, barW - 2, h);
+    }
+    rafId = requestAnimationFrame(draw);
+  }
+
+  function start() {
+    if (!audioCtx) {
+      try {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        analyser = audioCtx.createAnalyser();
+        analyser.fftSize = 512;
+        source = audioCtx.createMediaElementSource(audioEl);
+        source.connect(analyser);
+        analyser.connect(audioCtx.destination);
+      } catch (e) {
+        // 不支持就静默失败
+        return;
+      }
+    }
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    if (rafId) cancelAnimationFrame(rafId);
+    draw();
+  }
+
+  function stop() {
+    if (rafId) cancelAnimationFrame(rafId);
+    rafId = null;
+    drawIdle();
+  }
+
+  audioEl.addEventListener('play', start);
+  audioEl.addEventListener('pause', stop);
+  audioEl.addEventListener('ended', stop);
+
+  drawIdle();
+}
+
+function bindWaveforms() {
+  var audios = document.querySelectorAll('audio[data-task-audio]');
+  audios.forEach(function (a) {
+    if (a.dataset.waveBound === '1') return;
+    var taskId = a.getAttribute('data-task-audio');
+    var canvas = document.querySelector('canvas[data-task-wave="' + taskId + '"]');
+    if (!canvas) return;
+    initWaveform(a, canvas);
+    a.dataset.waveBound = '1';
+  });
 }
 
 function copyShareLink(taskId, el) {
