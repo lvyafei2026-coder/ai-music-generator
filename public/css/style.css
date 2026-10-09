@@ -1586,3 +1586,49 @@ body.page-dark .support-block a:hover {
   min-height: 1.2em;
 }
 .ent-status-ok { color: #4ade80; }
+
+
+/* ============================================================
+   Header 布局修复（所有深色页面通用）
+   ============================================================ */
+.header .header-inner {
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 16px 24px;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 24px;
+}
+.header .header-inner .logo {
+  flex-shrink: 0;
+}
+.header .header-inner .header-nav {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  margin-left: auto;
+}
+@media (max-width: 700px) {
+  .header .header-inner {
+    padding: 12px 16px;
+    gap: 12px;
+  }
+  .header .header-inner .header-nav {
+    gap: 14px;
+    font-size: 0.85rem;
+  }
+}
+
+
+.footer-enterprise {
+  margin-top: 8px !important;
+}
+.footer-enterprise a {
+  color: #c9b5ff;
+  text-decoration: none;
+  font-weight: 600;
+}
+.footer-enterprise a:hover {
+  text-decoration: underline;
+}
