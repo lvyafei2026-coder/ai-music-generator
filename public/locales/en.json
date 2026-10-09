@@ -153,5 +153,6 @@
   "statusCompleted": "Completed",
   "statusGenerating": "Generating",
   "statusPending": "Pending",
-  "statusFailed": "Failed"
+  "statusFailed": "Failed",
+  "tabGenerating": "Generating"
 }

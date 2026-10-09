@@ -1360,3 +1360,58 @@ body.home-dark .lang-select {
 body:not(.page-dark):not(.home-dark) .lang-select {
   background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e") !important;
 }
+
+
+/* ============================================================
+   Dashboard：创作卡 vs 歌曲卡 视觉区分 + 联系区块强化
+   ============================================================ */
+
+/* 左侧创作卡：稍亮，紫色调边框，主操作感 */
+body.page-dark .create-card {
+  background: linear-gradient(180deg, #1a1a26 0%, #16161f 100%);
+  border: 1px solid rgba(168,85,247,0.20);
+  box-shadow: 0 4px 28px rgba(168,85,247,0.10);
+}
+
+/* 右侧歌曲卡：更暗，中性边框，结果展示感 */
+body.page-dark .songs-card {
+  background: #0f0f16;
+  border: 1px solid rgba(255,255,255,0.06);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+
+/* 歌曲卡里的空状态 */
+body.page-dark .songs-card .empty-state {
+  color: #6a6a7a;
+}
+
+/* 联系区块强化 */
+body.page-dark .support-block {
+  margin: 48px 0 24px;
+  padding: 32px 24px;
+  border-radius: 18px;
+  text-align: center;
+  background: linear-gradient(135deg, rgba(168,85,247,0.10), rgba(236,72,153,0.08));
+  border: 1px solid rgba(168,85,247,0.28);
+}
+body.page-dark .support-block h3 {
+  margin: 0 0 10px;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #f0f0f5;
+}
+body.page-dark .support-block p {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #c0c0cc;
+}
+body.page-dark .support-block a {
+  color: #c9b5ff;
+  font-weight: 700;
+  text-decoration: none;
+  word-break: break-all;
+}
+body.page-dark .support-block a:hover {
+  color: #a855f7;
+  text-decoration: underline;
+}

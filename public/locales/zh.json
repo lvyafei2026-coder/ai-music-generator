@@ -153,5 +153,6 @@
   "statusCompleted": "已完成",
   "statusGenerating": "生成中",
   "statusPending": "排队中",
-  "statusFailed": "失败"
+  "statusFailed": "失败",
+  "tabGenerating": "生成中"
 }

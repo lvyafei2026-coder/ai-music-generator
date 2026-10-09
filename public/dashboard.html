@@ -87,6 +87,7 @@
         <h2 data-i18n="yourSongs">Your Songs</h2>
         <div class="tabs" id="taskTabs">
           <button class="tab" data-tab="all" onclick="switchTaskTab('all')" data-i18n="tabAll">All</button>
+          <button class="tab" data-tab="generating" onclick="switchTaskTab('generating')" data-i18n="tabGenerating">Generating</button>
           <button class="tab active" data-tab="completed" onclick="switchTaskTab('completed')" data-i18n="tabCompleted">Completed</button>
           <button class="tab" data-tab="failed" onclick="switchTaskTab('failed')" data-i18n="tabFailed">Failed</button>
         </div>
@@ -97,6 +98,11 @@
 
   </div>
 
+
+  <section class="support-block" id="supportBlock">
+    <h3 data-i18n="supportTitle">Questions, feedback, or business inquiry?</h3>
+    <p><span data-i18n="supportBody">Email me at</span> <a href="mailto:lvyafei2026@gmail.com">lvyafei2026@gmail.com</a></p>
+  </section>
 </main>
 
 <script src="js/i18n.js"></script>
@@ -247,6 +253,8 @@ function renderTasks() {
   var filtered = allTasks;
   if (currentTab === 'completed') {
     filtered = allTasks.filter(function (t) { return t.status === 'completed'; });
+  } else if (currentTab === 'generating') {
+    filtered = allTasks.filter(function (t) { return t.status === 'generating' || t.status === 'pending'; });
   } else if (currentTab === 'failed') {
     filtered = allTasks.filter(function (t) { return t.status === 'failed'; });
   }
