@@ -268,16 +268,36 @@ function renderTasks() {
 
   list.innerHTML = filtered.map(function (t) {
     var url = t.audioUrl ? (API_BASE + t.audioUrl) : '';
-    var retryBtn = t.status === 'failed'
-      ? '<button class="retry-btn" onclick="retryTask(\'' + t.id + '\')">↻ ' + statusLabelSafe('retryBtn', 'Retry') + '</button>'
+    var isGen = t.status === 'generating' || t.status === 'pending';
+    var canReuse = t.status === 'completed' || t.status === 'failed';
+
+    // 详情链接
+    var detailLink = '<a href="javascript:void(0)" class="task-text-link" onclick="toggleTaskDetail(\'' + t.id + '\')" id="detail-toggle-' + t.id + '">' + t('taskDetails', 'Details') + '</a>';
+
+    // 复用链接（只有已完成 / 失败才有）
+    var reuseLink = canReuse
+      ? '<a href="javascript:void(0)" class="task-text-link task-text-link-accent" onclick="reuseTask(\'' + t.id + '\')">' + t('taskReuse', 'Reuse') + '</a>'
       : '';
-    return '<div class="task-item">' +
+
+    // 详情展开区
+    var lyricsVal = t.lyrics ? escapeHtml(t.lyrics) : '<span class="muted">' + t('detailNoLyrics', '(none)') + '</span>';
+    var createdStr = t.createdAt ? new Date(t.createdAt).toLocaleString() : '—';
+    var detail = '<div class="task-detail" id="detail-' + t.id + '" style="display:none;">' +
+      '<div class="task-detail-row"><span>' + t('detailPrompt', 'Prompt') + ':</span><div>' + escapeHtml(t.prompt || '') + '</div></div>' +
+      '<div class="task-detail-row"><span>' + t('detailLyrics', 'Lyrics') + ':</span><div class="task-detail-lyrics">' + lyricsVal + '</div></div>' +
+      '<div class="task-detail-row"><span>' + t('detailDuration', 'Duration') + ':</span><div>' + (t.duration ? t.duration + 's' : '—') + '</div></div>' +
+      '<div class="task-detail-row"><span>' + t('detailInstrumental', 'Instrumental') + ':</span><div>' + (t.isInstrumental ? t('detailYes', 'Yes') : t('detailNo', 'No')) + '</div></div>' +
+      '<div class="task-detail-row"><span>' + t('detailCreated', 'Created') + ':</span><div>' + createdStr + '</div></div>' +
+    '</div>';
+
+    return '<div class="task-item" data-task-id="' + t.id + '">' +
       '<div class="task-info">' +
         '<div class="task-prompt">' + escapeHtml(t.prompt).slice(0, 100) + '</div>' +
         '<div class="task-status ' + t.status + '">' + statusLabel(t.status) + '</div>' +
       '</div>' +
       (url ? '<audio controls src="' + url + '"></audio>' : '') +
-      retryBtn +
+      '<div class="task-links">' + detailLink + reuseLink + '</div>' +
+      detail +
     '</div>';
   }).join('');
 }

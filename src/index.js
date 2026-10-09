@@ -144,7 +144,7 @@ async function handleGenerate(request, env) {
     const taskId = crypto.randomUUID();
     console.log('[Generate] Creating task:', taskId);
 
-    await createMusicTask(env, { id: taskId, userId: user.id, prompt, lyrics, isInstrumental });
+    await createMusicTask(env, { id: taskId, userId: user.id, prompt, lyrics, isInstrumental, audioDuration });
     console.log('[Generate] Task created in D1');
 
     await incrementUsage(env, user.id);
