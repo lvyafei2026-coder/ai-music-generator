@@ -137,5 +137,7 @@
   "lyricsOptimizing": "Improving lyrics...",
   "lyricsDone": "Done. Feel free to edit.",
   "lyricsFailed": "Failed. Please try again.",
-  "lyricsEmpty": "Please write some lyrics first."
+  "lyricsEmpty": "Please write some lyrics first.",
+  "lyricsPromptEmpty": "Please describe your song first.",
+  "lyricsPromptHint": "Based on your description above"
 }

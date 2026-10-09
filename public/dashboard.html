@@ -248,8 +248,17 @@ function currentLang() {
 }
 
 async function aiGenerateLyrics() {
-  var topic = window.prompt(t('lyricsTopicPrompt', 'Enter a topic or theme:'));
-  if (!topic || !topic.trim()) return;
+  var promptEl = document.getElementById('prompt');
+  var topic = promptEl ? promptEl.value.trim() : '';
+
+  // 未填描述：红框 + 提示
+  if (!topic || topic.length < 5) {
+    promptEl.classList.add('input-error');
+    setLyricsHint(t('lyricsPromptEmpty', 'Please describe your song first.'), true);
+    promptEl.focus();
+    setTimeout(function () { promptEl.classList.remove('input-error'); }, 2000);
+    return;
+  }
 
   var btn = event && event.target;
   if (btn) btn.disabled = true;
@@ -259,7 +268,7 @@ async function aiGenerateLyrics() {
     var res = await fetch(API_BASE + '/api/lyrics', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ mode: 'generate', topic: topic.trim(), language: currentLang() })
+      body: JSON.stringify({ mode: 'generate', topic: topic, language: currentLang() })
     });
     var data = await res.json();
     if (!res.ok) {

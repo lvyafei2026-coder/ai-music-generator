@@ -137,5 +137,7 @@
   "lyricsOptimizing": "正在优化歌词……",
   "lyricsDone": "完成，可继续修改。",
   "lyricsFailed": "失败，请重试。",
-  "lyricsEmpty": "请先输入一些歌词。"
+  "lyricsEmpty": "请先输入一些歌词。",
+  "lyricsPromptEmpty": "请先描述你的歌曲。",
+  "lyricsPromptHint": "根据上方描述生成"
 }

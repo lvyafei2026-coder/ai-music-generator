@@ -1,7 +1,7 @@
 // AI 歌词生成 / 优化
 // 使用 Cloudflare Workers AI 的 Llama 3.1 8B
 
-const MODEL = '@cf/meta/llama-3.1-8b-instruct';
+const MODEL = '@cf/meta/infire-llama-3.1-8b-instruct';
 
 function json(obj, status = 200) {
   return new Response(JSON.stringify(obj), {

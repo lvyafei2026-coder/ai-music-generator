@@ -935,3 +935,18 @@ body.home-dark .header-dark .logo-mark {
 .lyrics-hint-error {
   color: #dc2626;
 }
+
+
+/* ============================================================
+   输入框错误状态（歌词生成前的校验）
+   ============================================================ */
+.input-error {
+  border-color: #dc2626 !important;
+  box-shadow: 0 0 0 3px rgba(220,38,38,0.15) !important;
+  animation: inputShake 0.35s ease;
+}
+@keyframes inputShake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
