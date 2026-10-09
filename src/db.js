@@ -53,11 +53,11 @@ export async function deleteSession(env, sessionId) {
   await env.DB.prepare('DELETE FROM sessions WHERE id = ?').bind(sessionId).run();
 }
 
-export async function createMusicTask(env, { id, userId, prompt, lyrics, isInstrumental }) {
+export async function createMusicTask(env, { id, userId, prompt, lyrics, isInstrumental, audioDuration }) {
   await env.DB.prepare(
-    `INSERT INTO music_tasks (id, user_id, prompt, lyrics, is_instrumental, status, created_at)
-     VALUES (?, ?, ?, ?, ?, 'pending', ?)`
-  ).bind(id, userId, prompt, lyrics || null, isInstrumental ? 1 : 0, Date.now()).run();
+    `INSERT INTO music_tasks (id, user_id, prompt, lyrics, is_instrumental, audio_duration, status, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, 'pending', ?)`
+  ).bind(id, userId, prompt, lyrics || null, isInstrumental ? 1 : 0, audioDuration || null, Date.now()).run();
 }
 
 export async function getMusicTask(env, taskId, userId) {
