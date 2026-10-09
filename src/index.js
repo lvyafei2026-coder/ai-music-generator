@@ -212,8 +212,12 @@ async function handleListTasks(request, env) {
       tasks: tasks.map(t => ({
         id: t.id,
         prompt: t.prompt,
+        lyrics: t.lyrics || null,
+        isInstrumental: t.is_instrumental === 1,
+        duration: t.audio_duration || null,
         status: t.status,
         audioUrl: t.audio_key && t.status === 'completed' ? `/music/api/audio/${t.audio_key}` : null,
+        error: t.error || null,
         createdAt: t.created_at
       }))
     });
