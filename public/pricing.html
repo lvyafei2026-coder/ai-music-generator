@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pricing — AI Music Generator</title>
+<title data-i18n="pricingTitle">Pricing — AI Music Generator</title>
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -11,67 +11,76 @@
   <div class="header-inner">
     <a href="./" class="logo"><span class="logo-mark">T</span> toolara.dev</a>
     <nav class="header-nav">
-      <a href="dashboard.html">Dashboard</a>
+      <a href="dashboard.html" data-i18n="navDashboard">Dashboard</a>
+      <select id="langSelect" class="lang-select" onchange="setLang(this.value)" aria-label="Language">
+        <option value="en">English</option>
+        <option value="zh">简体中文</option>
+      </select>
     </nav>
   </div>
 </header>
 
 <main class="wrap">
-  <h1 class="page-title">Simple, transparent pricing</h1>
+  <h1 class="page-title" data-i18n="pricingHeading">Simple, transparent pricing</h1>
 
   <div class="pricing-grid">
     <div class="pricing-card">
-      <h2>Free</h2>
-      <div class="price">$0<span>/month</span></div>
+      <h2 data-i18n="freePlan">Free</h2>
+      <div class="price">$0<span data-i18n="perMonth">/month</span></div>
       <ul class="features">
-        <li>3 song generations per month</li>
-        <li>MP3 download</li>
-        <li>AI-generated lyrics</li>
-        <li>Commercial use allowed</li>
+        <li data-i18n="featFree1">3 song generations per month</li>
+        <li data-i18n="featFree2">MP3 download</li>
+        <li data-i18n="featFree3">AI-generated lyrics</li>
+        <li data-i18n="featFree4">Commercial use allowed</li>
       </ul>
-      <a href="login.html" class="btn-secondary">Get started</a>
+      <a href="login.html" class="btn-secondary" data-i18n="getStarted">Get started</a>
     </div>
 
     <div class="pricing-card featured">
-      <div class="popular-badge">Most popular</div>
-      <h2>Pro</h2>
-      <div class="price">$9<span>/month</span></div>
+      <div class="popular-badge" data-i18n="popular">Most popular</div>
+      <h2 data-i18n="proPlan">Pro</h2>
+      <div class="price">$9<span data-i18n="perMonth">/month</span></div>
       <ul class="features">
-        <li>100 song generations per month</li>
-        <li>MP3 download</li>
-        <li>Custom lyrics support</li>
-        <li>Commercial use allowed</li>
-        <li>Priority support</li>
+        <li data-i18n="featPro1">100 song generations per month</li>
+        <li data-i18n="featPro2">MP3 download</li>
+        <li data-i18n="featPro3">Custom lyrics support</li>
+        <li data-i18n="featPro4">Commercial use allowed</li>
+        <li data-i18n="featPro5">Priority support</li>
       </ul>
-      <button class="btn-primary" onclick="subscribe()">Upgrade to Pro</button>
+      <button class="btn-primary" onclick="subscribe()" data-i18n="upgradeToPro">Upgrade to Pro</button>
     </div>
   </div>
 </main>
 
+<script src="js/i18n.js"></script>
 <script>
+var API_BASE = '/ai-music-generator';
+
+function t(key, fallback) {
+  return (window.__i18n && window.__i18n.t && window.__i18n.t[key]) || fallback || key;
+}
+
 async function subscribe() {
-  const meRes = await fetch('api/auth/me');
+  var meRes = await fetch(API_BASE + '/api/auth/me');
   if (!meRes.ok) {
     window.location.href = 'login.html';
     return;
   }
-
-  const meData = await meRes.json();
+  var meData = await meRes.json();
   if (meData.user.plan === 'pro') {
-    alert('You are already on the Pro plan.');
+    alert(t('alreadyPro', 'You are already on the Pro plan.'));
     window.location.href = 'dashboard.html';
     return;
   }
-
-  const res = await fetch('api/billing/checkout', {
+  var res = await fetch(API_BASE + '/api/billing/checkout', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' }
   });
-  const data = await res.json();
+  var data = await res.json();
   if (data.url) {
     window.location.href = data.url;
   } else {
-    alert(data.error || 'Could not start checkout.');
+    alert(data.error || t('checkoutFailed', 'Could not start checkout.'));
   }
 }
 </script>

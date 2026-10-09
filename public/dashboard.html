@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard — AI Music Generator</title>
+<title data-i18n="dashTitle">Dashboard — AI Music Generator</title>
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -11,136 +11,147 @@
   <div class="header-inner">
     <a href="/" class="logo"><span class="logo-mark">T</span> toolara.dev</a>
     <nav class="header-nav">
-      <a href="pricing.html">Pricing</a>
-      <a href="#" onclick="doLogout()">Sign Out</a>
+      <a href="pricing.html" data-i18n="navPricing">Pricing</a>
+      <a href="#" onclick="doLogout(); return false;" data-i18n="navSignOut">Sign Out</a>
+      <select id="langSelect" class="lang-select" onchange="setLang(this.value)" aria-label="Language">
+        <option value="en">English</option>
+        <option value="zh">简体中文</option>
+      </select>
     </nav>
   </div>
 </header>
 
 <main class="wrap no-hero">
   <div class="card user-card">
-    <p>Signed in as: <strong id="userEmail">—</strong></p>
-    <p id="proStatus" style="display:none; color:#059669; font-weight:600;">✓ Pro subscription active</p>
+    <p><span data-i18n="signedInAs">Signed in as:</span> <strong id="userEmail">—</strong></p>
+    <p id="proStatus" style="display:none; color:#059669; font-weight:600;" data-i18n="proActive">✓ Pro subscription active</p>
   </div>
+
   <div class="card usage-card">
     <div class="usage-header">
-      <h2>Your Plan</h2>
-      <span id="planBadge" class="plan-badge free">Free</span>
+      <h2 data-i18n="yourPlan">Your Plan</h2>
+      <span id="planBadge" class="plan-badge free" data-i18n="planFree">Free</span>
     </div>
     <div class="usage-bar-wrap">
       <div class="usage-bar" id="usageBar"></div>
     </div>
     <p class="usage-text" id="usageText">0 / 3 generations used this month</p>
-    <a href="pricing.html" class="btn-primary small" id="upgradeBtn">Upgrade to Pro</a>
+    <a href="pricing.html" class="btn-primary small" id="upgradeBtn" data-i18n="upgradeBtn">Upgrade to Pro</a>
   </div>
 
   <div class="card">
-    <h2>Create a Song</h2>
-    <label>Describe your song</label>
-    <textarea id="prompt" rows="3" placeholder="An upbeat electronic dance track with female vocals about summer nights"></textarea>
-    <label>Duration (seconds, 10–300)</label>
+    <h2 data-i18n="createSong">Create a Song</h2>
+    <label data-i18n="labelPrompt">Describe your song</label>
+    <textarea id="prompt" rows="3" data-i18n-placeholder="promptPlaceholder" placeholder="An upbeat electronic dance track with female vocals about summer nights"></textarea>
+
+    <label data-i18n="labelDuration">Duration (seconds, 10–300)</label>
     <input type="number" id="duration" min="10" max="300" step="10" value="120" inputmode="numeric">
-    <label>Lyrics (optional — leave blank for AI-generated lyrics)</label>
-    <textarea id="lyrics" rows="4" placeholder="Paste your own lyrics here, or leave blank..."></textarea>
+
+    <label data-i18n="labelLyrics">Lyrics (optional — leave blank for AI-generated lyrics)</label>
+    <textarea id="lyrics" rows="4" data-i18n-placeholder="lyricsPlaceholder" placeholder="Paste your own lyrics here, or leave blank..."></textarea>
+
     <label class="checkbox-label">
-      <input type="checkbox" id="instrumental"> Instrumental only (no vocals)
+      <input type="checkbox" id="instrumental"> <span data-i18n="labelInstrumental">Instrumental only (no vocals)</span>
     </label>
-    <button class="calc" id="generateBtn" onclick="generate()">Generate Song</button>
+    <button class="calc" id="generateBtn" onclick="generate()" data-i18n="btnGenerate">Generate Song</button>
     <div id="genError" class="error" style="display:none;"></div>
     <div id="genLoading" class="loading" style="display:none;">
       <div class="spinner"></div>
-      <div>Generating your song... This takes 1-3 minutes.</div>
+      <div data-i18n="generating">Generating your song... This takes 1-3 minutes.</div>
     </div>
   </div>
 
   <div class="card">
-    <h2>Your Songs</h2>
+    <h2 data-i18n="yourSongs">Your Songs</h2>
     <div id="taskList" class="task-list"></div>
-    <p id="emptyTasks" class="empty-state">No songs yet. Create your first one above.</p>
+    <p id="emptyTasks" class="empty-state" data-i18n="emptyTasks">No songs yet. Create your first one above.</p>
   </div>
 </main>
 
+<script src="js/i18n.js"></script>
 <script>
-let currentTaskId = null;
-let pollInterval = null;
+var API_BASE = '/ai-music-generator';
+var currentTaskId = null;
+var pollInterval = null;
+
+function t(key, fallback) {
+  return (window.__i18n && window.__i18n.t && window.__i18n.t[key]) || fallback || key;
+}
 
 async function loadUser() {
-  const res = await fetch('api/auth/me');
+  var res = await fetch(API_BASE + '/api/auth/me');
   if (!res.ok) { window.location.href = 'login.html'; return; }
-  const data = await res.json();
-  const u = data.user;
+  var data = await res.json();
+  var u = data.user;
 
-  // 显示邮箱
-  const emailEl = document.getElementById('userEmail');
+  var emailEl = document.getElementById('userEmail');
   if (emailEl) emailEl.textContent = u.email;
 
-  // 显示套餐
-  const isPro = u.plan === 'pro';
-  const badge = document.getElementById('planBadge');
-  badge.textContent = isPro ? 'Pro' : 'Free';
+  var isPro = u.plan === 'pro';
+  var badge = document.getElementById('planBadge');
+  badge.textContent = isPro ? t('planPro', 'Pro') : t('planFree', 'Free');
   badge.className = 'plan-badge ' + (isPro ? 'pro' : 'free');
 
-  // 用量进度（修复了模板字符串的语法错误）
-  const pct = u.generations_limit > 0 ? (u.generations_used / u.generations_limit * 100) : 0;
+  var pct = u.generations_limit > 0 ? (u.generations_used / u.generations_limit * 100) : 0;
   document.getElementById('usageBar').style.width = Math.min(pct, 100) + '%';
-  document.getElementById('usageText').textContent = 
-    u.generations_used + ' / ' + u.generations_limit + ' generations used this month';
+  document.getElementById('usageText').textContent =
+    t('usageText', '{used} / {limit} generations used this month')
+      .replace('{used}', u.generations_used)
+      .replace('{limit}', u.generations_limit);
 
-  // 订阅状态
-  const proStatus = document.getElementById('proStatus');
-  if (proStatus) {
-    proStatus.style.display = isPro ? 'block' : 'none';
-  }
-  if (isPro) {
-    document.getElementById('upgradeBtn').style.display = 'none';
-  }
+  var proStatus = document.getElementById('proStatus');
+  if (proStatus) proStatus.style.display = isPro ? 'block' : 'none';
+  if (isPro) document.getElementById('upgradeBtn').style.display = 'none';
 
-  // 用量到达上限
   if (u.generations_used >= u.generations_limit) {
-    const btn = document.getElementById('generateBtn');
+    var btn = document.getElementById('generateBtn');
     btn.disabled = true;
-    btn.textContent = 'Limit reached — Upgrade to Pro';
+    btn.textContent = t('limitReached', 'Limit reached — Upgrade to Pro');
   }
 }
 
 async function generate() {
-  const prompt = document.getElementById('prompt').value.trim();
-  const lyrics = document.getElementById('lyrics').value.trim();
-  const isInstrumental = document.getElementById('instrumental').checked;
-  const errEl = document.getElementById('genError');
-  const loadingEl = document.getElementById('genLoading');
-  const btn = document.getElementById('generateBtn');
+  var prompt = document.getElementById('prompt').value.trim();
+  var lyrics = document.getElementById('lyrics').value.trim();
+  var isInstrumental = document.getElementById('instrumental').checked;
+  var duration = parseInt(document.getElementById('duration').value, 10) || 120;
+  var errEl = document.getElementById('genError');
+  var loadingEl = document.getElementById('genLoading');
+  var btn = document.getElementById('generateBtn');
 
   errEl.style.display = 'none';
-  if (prompt.length < 5) { errEl.textContent = 'Please describe your song.'; errEl.style.display = 'block'; return; }
+  if (prompt.length < 5) {
+    errEl.textContent = t('errorDescribe', 'Please describe your song.');
+    errEl.style.display = 'block';
+    return;
+  }
 
   btn.disabled = true;
   loadingEl.style.display = 'flex';
 
   try {
-    const res = await fetch('api/generate', {
+    var res = await fetch(API_BASE + '/api/generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        prompt,
-        lyrics,
-        isInstrumental,
-        audioDuration: parseInt(document.getElementById('duration').value, 10) || 120
+        prompt: prompt,
+        lyrics: lyrics,
+        isInstrumental: isInstrumental,
+        audioDuration: duration
       })
     });
-    const data = await res.json();
+    var data = await res.json();
     if (!res.ok) {
-      errEl.textContent = data.error || 'Generation failed.';
+      errEl.textContent = data.error || t('errorGeneration', 'Generation failed.');
       errEl.style.display = 'block';
       btn.disabled = false;
       loadingEl.style.display = 'none';
       return;
     }
-
     currentTaskId = data.taskId;
     pollTask(data.taskId);
   } catch (err) {
-    errEl.textContent = 'Network error. Please try again.';
+    errEl.textContent = t('errorNetwork', 'Network error. Please try again.');
     errEl.style.display = 'block';
     btn.disabled = false;
     loadingEl.style.display = 'none';
@@ -149,9 +160,9 @@ async function generate() {
 
 function pollTask(taskId) {
   if (pollInterval) clearInterval(pollInterval);
-  pollInterval = setInterval(async () => {
-    const res = await fetch('api/task/' + taskId);
-    const data = await res.json();
+  pollInterval = setInterval(async function () {
+    var res = await fetch(API_BASE + '/api/task/' + taskId);
+    var data = await res.json();
     if (data.status === 'completed') {
       clearInterval(pollInterval);
       document.getElementById('genLoading').style.display = 'none';
@@ -161,7 +172,7 @@ function pollTask(taskId) {
     } else if (data.status === 'failed') {
       clearInterval(pollInterval);
       document.getElementById('genLoading').style.display = 'none';
-      document.getElementById('genError').textContent = data.error || 'Generation failed.';
+      document.getElementById('genError').textContent = data.error || t('errorGeneration', 'Generation failed.');
       document.getElementById('genError').style.display = 'block';
       document.getElementById('generateBtn').disabled = false;
     }
@@ -169,42 +180,49 @@ function pollTask(taskId) {
 }
 
 async function loadTasks() {
-  const res = await fetch('api/tasks');
-  const data = await res.json();
-  const list = document.getElementById('taskList');
-  const empty = document.getElementById('emptyTasks');
+  var res = await fetch(API_BASE + '/api/tasks');
+  var data = await res.json();
+  var list = document.getElementById('taskList');
+  var empty = document.getElementById('emptyTasks');
   if (!data.tasks || data.tasks.length === 0) {
     empty.style.display = 'block';
     list.innerHTML = '';
     return;
   }
   empty.style.display = 'none';
-  list.innerHTML = data.tasks.map(t => `
-    <div class="task-item">
-      <div class="task-info">
-        <div class="task-prompt">${escapeHtml(t.prompt).slice(0, 100)}</div>
-        <div class="task-status ${t.status}">${t.status}</div>
-      </div>
-      ${t.audioUrl ? `<audio controls src="${t.audioUrl}"></audio>` : ''}
-    </div>
-  `).join('');
+  list.innerHTML = data.tasks.map(function (t) {
+    var url = t.audioUrl ? (API_BASE + t.audioUrl) : '';
+    return '<div class="task-item">' +
+      '<div class="task-info">' +
+        '<div class="task-prompt">' + escapeHtml(t.prompt).slice(0, 100) + '</div>' +
+        '<div class="task-status ' + t.status + '">' + t.status + '</div>' +
+      '</div>' +
+      (url ? '<audio controls src="' + url + '"></audio>' : '') +
+    '</div>';
+  }).join('');
 }
 
-function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, function (c) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+  });
+}
 
 async function doLogout() {
-  await fetch('api/auth/logout', { method: 'POST' });
+  await fetch(API_BASE + '/api/auth/logout', { method: 'POST' });
   window.location.href = './';
 }
 
-loadUser();
-loadTasks();
+document.addEventListener('i18n-ready', function () {
+  loadUser();
+  loadTasks();
+});
 
-// 处理支付成功返回
 if (new URLSearchParams(window.location.search).get('success') === 'true') {
-  alert('Payment successful! Your Pro subscription is now active.');
-  // 清理 URL 参数，避免刷新时重复提示
-  window.history.replaceState({}, '', 'dashboard.html');
+  setTimeout(function () {
+    alert(t('paymentSuccess', 'Payment successful! Your Pro subscription is now active.'));
+    window.history.replaceState({}, '', 'dashboard.html');
+  }, 500);
 }
 </script>
 </body>

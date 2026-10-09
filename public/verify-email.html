@@ -3,13 +3,19 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Verify Email — AI Music Generator</title>
+<title data-i18n="verifyTitle">Verify Email — AI Music Generator</title>
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 <header class="header">
   <div class="header-inner">
     <a href="./" class="logo"><span class="logo-mark">T</span> toolara.dev</a>
+    <nav class="header-nav">
+      <select id="langSelect" class="lang-select" onchange="setLang(this.value)" aria-label="Language">
+        <option value="en">English</option>
+        <option value="zh">简体中文</option>
+      </select>
+    </nav>
   </div>
 </header>
 
@@ -17,47 +23,57 @@
   <div class="card" style="text-align:center;">
     <div id="loading" style="padding:40px 0;">
       <div class="spinner" style="margin:0 auto 16px;"></div>
-      <p>Verifying your email...</p>
+      <p data-i18n="verifying">Verifying your email...</p>
     </div>
     <div id="success" style="display:none;">
-      <h2 style="color:#059669;">✓ Email verified</h2>
-      <p>Your account is now active.</p>
-      <a href="/ai-music-generator/login.html" class="btn-primary small" style="margin-top:16px;">Sign in</a>
+      <h2 style="color:#059669;" data-i18n="verifySuccess">✓ Email verified</h2>
+      <p data-i18n="verifySuccessBody">Your account is now active.</p>
+      <a href="login.html" class="btn-primary small" style="margin-top:16px;" data-i18n="btnSignInShort">Sign in</a>
     </div>
     <div id="error" style="display:none;">
-      <h2 style="color:#dc2626;">Verification failed</h2>
-      <p id="errorMsg">This link is invalid or has expired.</p>
-      <a href="login.html" class="btn-secondary" style="margin-top:16px; color:#0f766e; border-color:#0f766e;">Back to sign in</a>
+      <h2 style="color:#dc2626;" data-i18n="verifyFailed">Verification failed</h2>
+      <p id="errorMsg" data-i18n="verifyInvalid">This link is invalid or has expired.</p>
+      <a href="login.html" class="btn-secondary" style="margin-top:16px; color:#0f766e; border-color:#0f766e;" data-i18n="backToSignIn">Back to sign in</a>
     </div>
   </div>
 </main>
 
+<script src="js/i18n.js"></script>
 <script>
-const params = new URLSearchParams(window.location.search);
-const token = params.get('token');
+var API_BASE = '/ai-music-generator';
 
-if (!token) {
-  document.getElementById('loading').style.display = 'none';
-  document.getElementById('error').style.display = 'block';
-  document.getElementById('errorMsg').textContent = 'Missing verification token.';
-} else {
-  fetch('api/auth/verify-email?token=' + token)
-    .then(r => r.json())
-    .then(data => {
+function t(key, fallback) {
+  return (window.__i18n && window.__i18n.t && window.__i18n.t[key]) || fallback || key;
+}
+
+document.addEventListener('i18n-ready', function () {
+  var params = new URLSearchParams(window.location.search);
+  var token = params.get('token');
+
+  if (!token) {
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('error').style.display = 'block';
+    document.getElementById('errorMsg').textContent = t('verifyMissing', 'Missing verification token.');
+    return;
+  }
+
+  fetch(API_BASE + '/api/auth/verify-email?token=' + encodeURIComponent(token))
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
       document.getElementById('loading').style.display = 'none';
       if (data.success) {
         document.getElementById('success').style.display = 'block';
       } else {
         document.getElementById('error').style.display = 'block';
-        document.getElementById('errorMsg').textContent = data.error || 'Verification failed.';
+        document.getElementById('errorMsg').textContent = data.error || t('verifyInvalid', 'Verification failed.');
       }
     })
-    .catch(() => {
+    .catch(function () {
       document.getElementById('loading').style.display = 'none';
       document.getElementById('error').style.display = 'block';
-      document.getElementById('errorMsg').textContent = 'Network error. Please try again.';
+      document.getElementById('errorMsg').textContent = t('errorNetwork', 'Network error. Please try again.');
     });
-}
+});
 </script>
 </body>
 </html>
