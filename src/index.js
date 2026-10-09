@@ -122,6 +122,7 @@ async function handleGenerate(request, env) {
     const prompt = (body.prompt || '').trim();
     const lyrics = (body.lyrics || '').trim();
     const isInstrumental = !!body.isInstrumental;
+    const audioDuration = Math.min(Math.max(parseInt(body.audioDuration, 10) || 120, 10), 300);
 
     console.log('[Generate] Payload:', { promptLength: prompt.length, hasLyrics: !!lyrics, isInstrumental });
 
@@ -150,7 +151,8 @@ async function handleGenerate(request, env) {
       userId: user.id,
       prompt,
       lyrics,
-      isInstrumental
+      isInstrumental,
+      audioDuration
     });
     console.log('[Generate] Queue send completed:', taskId);
 

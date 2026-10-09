@@ -38,6 +38,8 @@
     <h2>Create a Song</h2>
     <label>Describe your song</label>
     <textarea id="prompt" rows="3" placeholder="An upbeat electronic dance track with female vocals about summer nights"></textarea>
+    <label>Duration (seconds, 10–300)</label>
+    <input type="number" id="duration" min="10" max="300" step="10" value="120" inputmode="numeric">
     <label>Lyrics (optional — leave blank for AI-generated lyrics)</label>
     <textarea id="lyrics" rows="4" placeholder="Paste your own lyrics here, or leave blank..."></textarea>
     <label class="checkbox-label">
@@ -119,7 +121,12 @@ async function generate() {
     const res = await fetch('api/generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt, lyrics, isInstrumental })
+      body: JSON.stringify({
+        prompt,
+        lyrics,
+        isInstrumental,
+        audioDuration: parseInt(document.getElementById('duration').value, 10) || 120
+      })
     });
     const data = await res.json();
     if (!res.ok) {
