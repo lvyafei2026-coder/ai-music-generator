@@ -266,34 +266,30 @@ function renderTasks() {
   }
   empty.style.display = 'none';
 
-  list.innerHTML = filtered.map(function (t) {
-    var url = t.audioUrl ? (API_BASE + t.audioUrl) : '';
-    var isGen = t.status === 'generating' || t.status === 'pending';
-    var canReuse = t.status === 'completed' || t.status === 'failed';
+  list.innerHTML = filtered.map(function (task) {
+    var url = task.audioUrl ? (API_BASE + task.audioUrl) : '';
+    var canReuse = task.status === 'completed' || task.status === 'failed';
 
-    // 详情链接
-    var detailLink = '<a href="javascript:void(0)" class="task-text-link" onclick="toggleTaskDetail(\'' + t.id + '\')" id="detail-toggle-' + t.id + '">' + t('taskDetails', 'Details') + '</a>';
+    var detailLink = '<a href="javascript:void(0)" class="task-text-link" onclick="toggleTaskDetail(\'' + task.id + '\')" id="detail-toggle-' + task.id + '">' + t('taskDetails', 'Details') + '</a>';
 
-    // 复用链接（只有已完成 / 失败才有）
     var reuseLink = canReuse
-      ? '<a href="javascript:void(0)" class="task-text-link task-text-link-accent" onclick="reuseTask(\'' + t.id + '\')">' + t('taskReuse', 'Reuse') + '</a>'
+      ? '<a href="javascript:void(0)" class="task-text-link task-text-link-accent" onclick="reuseTask(\'' + task.id + '\')">' + t('taskReuse', 'Reuse') + '</a>'
       : '';
 
-    // 详情展开区
-    var lyricsVal = t.lyrics ? escapeHtml(t.lyrics) : '<span class="muted">' + t('detailNoLyrics', '(none)') + '</span>';
-    var createdStr = t.createdAt ? new Date(t.createdAt).toLocaleString() : '—';
-    var detail = '<div class="task-detail" id="detail-' + t.id + '" style="display:none;">' +
-      '<div class="task-detail-row"><span>' + t('detailPrompt', 'Prompt') + ':</span><div>' + escapeHtml(t.prompt || '') + '</div></div>' +
+    var lyricsVal = task.lyrics ? escapeHtml(task.lyrics) : '<span class="muted">' + t('detailNoLyrics', '(none)') + '</span>';
+    var createdStr = task.createdAt ? new Date(task.createdAt).toLocaleString() : '—';
+    var detail = '<div class="task-detail" id="detail-' + task.id + '" style="display:none;">' +
+      '<div class="task-detail-row"><span>' + t('detailPrompt', 'Prompt') + ':</span><div>' + escapeHtml(task.prompt || '') + '</div></div>' +
       '<div class="task-detail-row"><span>' + t('detailLyrics', 'Lyrics') + ':</span><div class="task-detail-lyrics">' + lyricsVal + '</div></div>' +
-      '<div class="task-detail-row"><span>' + t('detailDuration', 'Duration') + ':</span><div>' + (t.duration ? t.duration + 's' : '—') + '</div></div>' +
-      '<div class="task-detail-row"><span>' + t('detailInstrumental', 'Instrumental') + ':</span><div>' + (t.isInstrumental ? t('detailYes', 'Yes') : t('detailNo', 'No')) + '</div></div>' +
+      '<div class="task-detail-row"><span>' + t('detailDuration', 'Duration') + ':</span><div>' + (task.duration ? task.duration + 's' : '—') + '</div></div>' +
+      '<div class="task-detail-row"><span>' + t('detailInstrumental', 'Instrumental') + ':</span><div>' + (task.isInstrumental ? t('detailYes', 'Yes') : t('detailNo', 'No')) + '</div></div>' +
       '<div class="task-detail-row"><span>' + t('detailCreated', 'Created') + ':</span><div>' + createdStr + '</div></div>' +
     '</div>';
 
-    return '<div class="task-item" data-task-id="' + t.id + '">' +
+    return '<div class="task-item" data-task-id="' + task.id + '">' +
       '<div class="task-info">' +
-        '<div class="task-prompt">' + escapeHtml(t.prompt).slice(0, 100) + '</div>' +
-        '<div class="task-status ' + t.status + '">' + statusLabel(t.status) + '</div>' +
+        '<div class="task-prompt">' + escapeHtml(task.prompt).slice(0, 100) + '</div>' +
+        '<div class="task-status ' + task.status + '">' + statusLabel(task.status) + '</div>' +
       '</div>' +
       (url ? '<audio controls src="' + url + '"></audio>' : '') +
       '<div class="task-links">' + detailLink + reuseLink + '</div>' +
