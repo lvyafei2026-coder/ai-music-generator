@@ -3,6 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#a855f7">
 <title>AI Music Generator — Create Songs from Text (Free to Start)</title>
 <meta name="description" content="Free AI music generator. Describe the song you want, get a full track with vocals or instrumental in minutes. Powered by MiniMax Music 3.">
 <meta name="robots" content="index, follow">
@@ -181,5 +183,12 @@
 
 <script src="js/i18n.js"></script>
 <script src="js/home.js"></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('sw.js').catch(function () {});
+  });
+}
+</script>
 </body>
 </html>

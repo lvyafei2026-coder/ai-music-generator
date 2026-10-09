@@ -22,7 +22,7 @@ export default {
     }
 
     // 内部重写：无扩展名的页面路径 → .html 文件
-    const pageRoutes = ['/dashboard', '/login', '/pricing', '/index', '/verify-email'];
+    const pageRoutes = ['/dashboard', '/login', '/pricing', '/index', '/verify-email', '/enterprise'];
     const lastSegment = path.split('/').pop();
     
     if (pageRoutes.includes('/' + lastSegment)) {

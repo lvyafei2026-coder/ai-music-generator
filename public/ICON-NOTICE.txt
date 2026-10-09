@@ -1,0 +1,8 @@
+请在 public/ 目录放置两个图标文件：
+  - icon-192.png（192x192）
+  - icon-512.png（512x512）
+
+建议：用现在的 T logo（紫粉渐变方块）导出 PNG。
+可以用 https://favicon.io 或 Figma 快速生成。
+
+在这两个文件存在之前，PWA 安装会失败。

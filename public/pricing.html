@@ -3,6 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#a855f7">
 <title data-i18n="pricingTitle">Pricing — AI Music Generator</title>
 <link rel="stylesheet" href="css/style.css">
 </head>
@@ -88,6 +90,13 @@ async function subscribe() {
   } else {
     alert(data.error || t('checkoutFailed', 'Could not start checkout.'));
   }
+}
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('sw.js').catch(function () {});
+  });
 }
 </script>
 </body>

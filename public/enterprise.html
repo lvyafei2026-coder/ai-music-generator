@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title data-i18n="navEnterprise">Enterprise — AI Music Generator</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#a855f7">
+</head>
+<body class="page-dark">
+
+<header class="header header-dark">
+  <div class="header-inner">
+    <a href="./" class="logo"><span class="logo-mark">T</span> toolara.dev</a>
+    <nav class="header-nav">
+      <a href="./" data-i18n="navHome">Home</a>
+      <a href="pricing.html" data-i18n="navPricing">Pricing</a>
+      <a href="dashboard.html" data-i18n="navDashboard">Dashboard</a>
+      <select id="langSelect" class="lang-select" onchange="setLang(this.value)" aria-label="Language">
+        <option value="en">English</option>
+        <option value="zh">简体中文</option>
+      </select>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="ent-hero">
+    <h1 data-i18n="entTitle">AI music for teams and brands</h1>
+    <p data-i18n="entSubtitle">Custom music generation at scale — for agencies, studios, and product teams.</p>
+  </section>
+
+  <div class="ent-grid">
+    <div class="ent-card">
+      <div class="ent-icon">📦</div>
+      <h3 data-i18n="entUse1Title">Batch generation</h3>
+      <p data-i18n="entUse1Body">Generate hundreds of tracks from a single prompt list. Perfect for content pipelines.</p>
+    </div>
+    <div class="ent-card">
+      <div class="ent-icon">🔌</div>
+      <h3 data-i18n="entUse2Title">API access</h3>
+      <p data-i18n="entUse2Body">Integrate our generation engine directly into your product or workflow.</p>
+    </div>
+    <div class="ent-card">
+      <div class="ent-icon">🎨</div>
+      <h3 data-i18n="entUse3Title">Custom styles</h3>
+      <p data-i18n="entUse3Body">Fine-tune the model on your brand sound. Exclusive style presets for your team.</p>
+    </div>
+    <div class="ent-card">
+      <div class="ent-icon">📜</div>
+      <h3 data-i18n="entUse4Title">Commercial license</h3>
+      <p data-i18n="entUse4Body">Full commercial rights, indemnification, and priority support.</p>
+    </div>
+  </div>
+
+  <section class="ent-form-section">
+    <h2 data-i18n="entFormTitle">Tell us about your project</h2>
+    <form id="entForm" class="ent-form" onsubmit="submitInquiry(event)">
+      <label data-i18n="entFormName">Your name</label>
+      <input type="text" id="entName" required>
+
+      <label data-i18n="entFormCompany">Company / team</label>
+      <input type="text" id="entCompany">
+
+      <label data-i18n="entFormEmail">Work email</label>
+      <input type="email" id="entEmail" required>
+
+      <label data-i18n="entFormMessage">What do you need?</label>
+      <textarea id="entMessage" rows="5" required></textarea>
+
+      <button type="submit" class="calc" data-i18n="entFormSubmit">Send inquiry</button>
+      <div id="entStatus" class="ent-status"></div>
+    </form>
+  </section>
+
+  <section class="support-block">
+    <h3 data-i18n="supportTitle">Questions, feedback, or business inquiry?</h3>
+    <p><span data-i18n="supportBody">Email me at</span> <a href="mailto:lvyafei2026@gmail.com">lvyafei2026@gmail.com</a></p>
+  </section>
+</main>
+
+<footer class="footer footer-dark">
+  <p data-i18n="footer">© 2026 toolara.dev — AI Music Generator</p>
+</footer>
+
+<script src="js/i18n.js"></script>
+<script>
+var API_BASE = '/music';
+
+function t(k, fb) {
+  return (window.__i18n && window.__i18n.t && window.__i18n.t[k]) || fb || k;
+}
+
+function submitInquiry(e) {
+  e.preventDefault();
+  var status = document.getElementById('entStatus');
+  status.textContent = '...';
+  status.className = 'ent-status';
+
+  var name = document.getElementById('entName').value.trim();
+  var company = document.getElementById('entCompany').value.trim();
+  var email = document.getElementById('entEmail').value.trim();
+  var message = document.getElementById('entMessage').value.trim();
+
+  // 用 mailto 打开用户邮件客户端（不需要后端）
+  var subject = encodeURIComponent('[Enterprise Inquiry] ' + (company || name));
+  var body = encodeURIComponent(
+    'Name: ' + name + '\n' +
+    'Company: ' + company + '\n' +
+    'Email: ' + email + '\n\n' +
+    'Message:\n' + message
+  );
+  var mailto = 'mailto:lvyafei2026@gmail.com?subject=' + subject + '&body=' + body;
+  window.location.href = mailto;
+
+  setTimeout(function () {
+    status.textContent = t('entFormSuccess', "Thanks! We'll get back to you within one business day.");
+    status.className = 'ent-status ent-status-ok';
+  }, 500);
+}
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('sw.js').catch(function () {});
+  });
+}
+</script>
+</body>
+</html>

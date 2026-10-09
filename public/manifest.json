@@ -1,0 +1,25 @@
+{
+  "name": "AI Music Generator — toolara.dev",
+  "short_name": "AI Music",
+  "description": "Turn a sentence into a song. AI music generation with vocals or instrumental.",
+  "start_url": "/music/",
+  "scope": "/music/",
+  "display": "standalone",
+  "background_color": "#0a0a0f",
+  "theme_color": "#a855f7",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

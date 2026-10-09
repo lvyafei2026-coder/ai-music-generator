@@ -3,6 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#a855f7">
 <title data-i18n="dashTitle">Dashboard — AI Music Generator</title>
 <link rel="stylesheet" href="css/style.css">
 </head>
@@ -446,6 +448,13 @@ if (new URLSearchParams(window.location.search).get('success') === 'true') {
     alert(t('paymentSuccess', 'Payment successful! Your Pro subscription is now active.'));
     window.history.replaceState({}, '', 'dashboard.html');
   }, 500);
+}
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('sw.js').catch(function () {});
+  });
 }
 </script>
 </body>
