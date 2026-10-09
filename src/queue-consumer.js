@@ -53,7 +53,8 @@ export default {
         } else {
           payload.instrumental = false;
           if (hasUserLyrics) {
-            payload.lyrics = lyrics.trim();
+            const hasTags = /\[(intro|verse|chorus|bridge|outro|pre chorus|hook|solo|inst|break)/i.test(lyrics);
+            payload.lyrics = hasTags ? lyrics.trim() : '[Verse]\n' + lyrics.trim();
           }
           // 人声但没填歌词时，接口会返回 "lyrics are required unless instrumental is true"
           // 这里不补默认歌词，让接口报错，便于前端排查
