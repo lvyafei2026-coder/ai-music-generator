@@ -26,9 +26,17 @@
 
   var demoIndex = 0;
   var demoTimer = null;
+  var AUTO_MS = 12000;
 
   function t(key, fallback) {
     return (window.__i18n && window.__i18n.t && window.__i18n.t[key]) || fallback || key;
+  }
+
+  function renderDots() {
+    var dots = document.querySelectorAll('#previewDots .preview-dot');
+    dots.forEach(function (d, i) {
+      d.classList.toggle('active', i === demoIndex);
+    });
   }
 
   function renderDemo(i) {
@@ -45,23 +53,63 @@
     tag.textContent = t(d.tagKey, d.tagFallback);
     title.textContent = t(d.titleKey, d.titleFallback);
 
-    // 切换音频源，重置播放
     audio.pause();
     audio.src = d.src;
     audio.load();
+    renderDots();
   }
 
-  function startCarousel() {
+  function resetAuto() {
     if (demoTimer) clearInterval(demoTimer);
     demoTimer = setInterval(function () {
       demoIndex = (demoIndex + 1) % DEMOS.length;
       renderDemo(demoIndex);
-    }, 8000);
+    }, AUTO_MS);
   }
 
-  function initCarousel() {
-    renderDemo(0);
-    startCarousel();
+  window.previewNext = function () {
+    demoIndex = (demoIndex + 1) % DEMOS.length;
+    renderDemo(demoIndex);
+    resetAuto();
+  };
+  window.previewPrev = function () {
+    demoIndex = (demoIndex - 1 + DEMOS.length) % DEMOS.length;
+    renderDemo(demoIndex);
+    resetAuto();
+  };
+  window.previewGo = function (i) {
+    if (i < 0 || i >= DEMOS.length) return;
+    demoIndex = i;
+    renderDemo(demoIndex);
+    resetAuto();
+  };
+
+  // ---------- 波形动画 ----------
+  // 播放时动，暂停时停
+  function initWave() {
+    var wave = document.getElementById('previewWave');
+    var audio = document.getElementById('previewAudio');
+    if (!wave || !audio) return;
+
+    // 生成 32 根细条
+    var N = 32;
+    var bars = [];
+    for (var i = 0; i < N; i++) {
+      var bar = document.createElement('span');
+      bar.className = 'preview-wave-bar';
+      // 每根条给一个随机的动画延迟和时长，看起来更自然
+      bar.style.animationDelay = (Math.random() * 1.2).toFixed(2) + 's';
+      bar.style.animationDuration = (0.7 + Math.random() * 0.8).toFixed(2) + 's';
+      wave.appendChild(bar);
+      bars.push(bar);
+    }
+
+    function play() { wave.classList.add('playing'); }
+    function pause() { wave.classList.remove('playing'); }
+
+    audio.addEventListener('play', play);
+    audio.addEventListener('pause', pause);
+    audio.addEventListener('ended', pause);
   }
 
   // ---------- 首屏输入框跳转 ----------
@@ -88,9 +136,11 @@
       });
   };
 
-  // 回车触发
   document.addEventListener('i18n-ready', function () {
-    initCarousel();
+    renderDemo(0);
+    resetAuto();
+    initWave();
+
     var input = document.getElementById('heroPrompt');
     if (input) {
       input.addEventListener('keydown', function (e) {

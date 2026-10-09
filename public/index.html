@@ -47,6 +47,7 @@
     </div>
     <div class="hero-dark-right">
       <div class="preview-card">
+        <div class="preview-wave" id="previewWave" aria-hidden="true"></div>
         <div class="preview-label" data-i18n="heroPreviewLabel">Now playing</div>
         <div class="preview-cover" id="previewCover">
           <span class="preview-cover-emoji" id="previewEmoji">🎤</span>
@@ -54,6 +55,14 @@
         <div class="preview-tag" id="previewTag" data-i18n="heroPreviewTag">With vocals</div>
         <div class="preview-title" id="previewTitle" data-i18n="heroPreviewTitle">Chinese pop ballad</div>
         <audio id="previewAudio" controls preload="none" src="demo/chinese-pop.mp3"></audio>
+        <div class="preview-nav">
+          <button class="preview-arrow" onclick="previewPrev()" aria-label="Previous">‹</button>
+          <div class="preview-dots" id="previewDots">
+            <span class="preview-dot active" onclick="previewGo(0)"></span>
+            <span class="preview-dot" onclick="previewGo(1)"></span>
+          </div>
+          <button class="preview-arrow" onclick="previewNext()" aria-label="Next">›</button>
+        </div>
       </div>
     </div>
   </div>
@@ -63,6 +72,8 @@
 
   <!-- ========== FEATURE CARDS ========== -->
   <section class="section-dark">
+    <h2 class="section-title-dark section-title-center" data-i18n="featuresTitle">Why use this</h2>
+    <p class="section-subtitle-dark section-subtitle-center" data-i18n="featuresSubtitle">Three things that make it different.</p>
     <div class="feature-grid">
       <div class="feature-card">
         <div class="feature-icon">✍️</div>
@@ -84,8 +95,8 @@
 
   <!-- ========== DEMO WALL ========== -->
   <section class="section-dark">
-    <h2 class="section-title-dark" data-i18n="demoTitle">Made with this tool</h2>
-    <p class="section-subtitle-dark" data-i18n="demoSubtitle">Real tracks generated from text prompts. No editing, straight from the model.</p>
+    <h2 class="section-title-dark section-title-center" data-i18n="demoTitle">Made with this tool</h2>
+    <p class="section-subtitle-dark section-subtitle-center" data-i18n="demoSubtitle">Real tracks generated from text prompts. No editing, straight from the model.</p>
 
     <div class="demo-wall">
       <div class="demo-wall-card">
@@ -134,7 +145,7 @@
 
   <!-- ========== USE CASES ========== -->
   <section class="section-dark">
-    <h2 class="section-title-dark" data-i18n="useCasesTitle">Built for creators</h2>
+    <h2 class="section-title-dark section-title-center" data-i18n="useCasesTitle">Built for creators</h2>
     <div class="usecase-grid-dark">
       <div class="usecase-card-dark">
         <div class="usecase-icon-dark">🎬</div>
