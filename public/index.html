@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AI Music Generator — Create Songs from Text (Free to Start)</title>
-<meta name="description" content="Free AI music generator. Describe the song you want, get a full track with vocals or instrumental. Powered by MiniMax Music 2.6 on Cloudflare Workers AI.">
+<meta name="description" content="Free AI music generator. Describe the song you want, get a full track with vocals or instrumental. Powered by MiniMax Music 3.">
 <meta name="robots" content="index, follow">
 <meta name="theme-color" content="#0f766e">
 <link rel="canonical" href="https://toolara.dev/ai-music-generator/">
@@ -23,13 +23,17 @@
       <a href="pricing.html" data-i18n="navPricing">Pricing</a>
       <a href="login.html" id="loginLink" data-i18n="navLogin">Sign In</a>
       <a href="dashboard.html" id="dashboardLink" style="display:none;" data-i18n="navDashboard">Dashboard</a>
+      <select id="langSelect" class="lang-select" onchange="setLang(this.value)" aria-label="Language">
+        <option value="en">English</option>
+        <option value="zh">简体中文</option>
+      </select>
     </nav>
   </div>
 </header>
 
 <section class="hero">
   <div class="hero-inner">
-    <div class="hero-badge">🎵 AI-powered</div>
+    <div class="hero-badge" data-i18n="heroBadge">🎵 AI-powered</div>
     <h1 data-i18n="title">AI Music Generator</h1>
     <p data-i18n="subtitle">Describe the song you want. Get a full track with vocals or instrumental in minutes.</p>
     <div class="hero-cta">
@@ -70,24 +74,20 @@
 </main>
 
 <footer class="footer">
-  <p>© 2026 toolara.dev — AI Music Generator</p>
+  <p data-i18n="footer">© 2026 toolara.dev — AI Music Generator</p>
 </footer>
 
+<script src="js/i18n.js"></script>
 <script>
-  fetch('api/auth/me').then(r => r.json()).then(data => {
-    if (data.user) {
-      document.getElementById('loginLink').style.display = 'none';
-      document.getElementById('dashboardLink').style.display = '';
-    }
-  }).catch(() => {});
-  // 检查登录状态，已登录则跳转到 dashboard
+  // 合并成一段：检查登录状态，切换导航并跳转
   fetch('api/auth/me')
-    .then(r => r.ok ? r.json() : null)
-    .then(data => {
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (data) {
       if (data && data.user) {
         window.location.href = 'dashboard.html';
       }
-  }).catch(() => {});
+    })
+    .catch(function () {});
 </script>
 </body>
 </html>

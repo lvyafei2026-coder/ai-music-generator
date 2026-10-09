@@ -3,103 +3,121 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sign In — AI Music Generator</title>
+<title data-i18n="loginTitle">Sign In — AI Music Generator</title>
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 <header class="header">
   <div class="header-inner">
     <a href="/" class="logo"><span class="logo-mark">T</span> toolara.dev</a>
+    <nav class="header-nav">
+      <select id="langSelect" class="lang-select" onchange="setLang(this.value)" aria-label="Language">
+        <option value="en">English</option>
+        <option value="zh">简体中文</option>
+      </select>
+    </nav>
   </div>
 </header>
 
 <main class="wrap narrow no-hero">
   <div class="card">
     <div class="auth-tabs">
-      <button class="auth-tab active" onclick="switchTab('login')">Sign In</button>
-      <button class="auth-tab" onclick="switchTab('signup')">Sign Up</button>
+      <button class="auth-tab active" id="tabLogin" onclick="switchTab('login', event)" data-i18n="tabLogin">Sign In</button>
+      <button class="auth-tab" id="tabSignup" onclick="switchTab('signup', event)" data-i18n="tabSignup">Sign Up</button>
     </div>
 
     <div id="loginForm">
-      <label>Email</label>
-      <input type="email" id="loginEmail" placeholder="you@example.com">
-      <label>Password</label>
-      <input type="password" id="loginPassword" placeholder="••••••••">
-      <button class="calc" onclick="doLogin()">Sign In</button>
+      <label data-i18n="labelEmail">Email</label>
+      <input type="email" id="loginEmail" data-i18n-placeholder="placeholderEmail" placeholder="you@example.com">
+      <label data-i18n="labelPassword">Password</label>
+      <input type="password" id="loginPassword" data-i18n-placeholder="placeholderPassword" placeholder="••••••••">
+      <button class="calc" id="btnLogin" onclick="doLogin()" data-i18n="btnLogin">Sign In</button>
       <div id="loginError" class="error" style="display:none;"></div>
     </div>
 
     <div id="signupForm" style="display:none;">
-      <label>Email</label>
-      <input type="email" id="signupEmail" placeholder="you@example.com">
-      <label>Password</label>
-      <input type="password" id="signupPassword" placeholder="At least 8 characters">
-      <button class="calc" onclick="doSignup()">Create Account</button>
+      <label data-i18n="labelEmail">Email</label>
+      <input type="email" id="signupEmail" data-i18n-placeholder="placeholderEmail" placeholder="you@example.com">
+      <label data-i18n="labelPassword">Password</label>
+      <input type="password" id="signupPassword" data-i18n-placeholder="placeholderPasswordSignup" placeholder="At least 8 characters">
+      <button class="calc" id="btnSignup" onclick="doSignup()" data-i18n="btnSignup">Create Account</button>
       <div id="signupError" class="error" style="display:none;"></div>
     </div>
   </div>
 </main>
 
+<script src="js/i18n.js"></script>
 <script>
-function switchTab(tab) {
-  document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
-  event.target.classList.add('active');
+function t(key, fallback) {
+  return (window.__i18n && window.__i18n.t && window.__i18n.t[key]) || fallback || key;
+}
+
+function switchTab(tab, ev) {
+  document.querySelectorAll('.auth-tab').forEach(function (t) { t.classList.remove('active'); });
+  if (ev && ev.target) ev.target.classList.add('active');
   document.getElementById('loginForm').style.display = tab === 'login' ? 'block' : 'none';
   document.getElementById('signupForm').style.display = tab === 'signup' ? 'block' : 'none';
 }
 
 async function doLogin() {
-  const email = document.getElementById('loginEmail').value;
-  const password = document.getElementById('loginPassword').value;
-  const res = await fetch('api/auth/login', {
+  var email = document.getElementById('loginEmail').value;
+  var password = document.getElementById('loginPassword').value;
+  var errEl = document.getElementById('loginError');
+  errEl.style.display = 'none';
+
+  var res = await fetch('api/auth/login', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password })
+    body: JSON.stringify({ email: email, password: password })
   });
-  const data = await res.json();
+  var data = await res.json();
+
   if (res.ok) {
     window.location.href = 'dashboard.html';
   } else if (data.code === 'EMAIL_NOT_VERIFIED') {
-    document.getElementById('loginError').innerHTML = 
-      'Please verify your email first. <a href="#" onclick="resendVerification(\'' + email + '\')">Resend verification email</a>';
-    document.getElementById('loginError').style.display = 'block';
+    errEl.innerHTML = t('emailNotVerified', 'Please verify your email first.') +
+      ' <a href="#" onclick="resendVerification(\'' + email + '\'); return false;">' +
+      t('resendVerification', 'Resend verification email') + '</a>';
+    errEl.style.display = 'block';
   } else {
-    document.getElementById('loginError').textContent = data.error;
-    document.getElementById('loginError').style.display = 'block';
+    errEl.textContent = data.error || t('errorLoginFailed', 'Login failed.');
+    errEl.style.display = 'block';
   }
 }
 
 async function resendVerification(email) {
-  const res = await fetch('api/auth/resend-verification', {
+  var res = await fetch('api/auth/resend-verification', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email })
+    body: JSON.stringify({ email: email })
   });
-  const data = await res.json();
+  var data = await res.json();
   alert(data.message || 'Verification email resent.');
 }
 
 async function doSignup() {
-  const email = document.getElementById('signupEmail').value;
-  const password = document.getElementById('signupPassword').value;
-  const res = await fetch('api/auth/signup', {
+  var email = document.getElementById('signupEmail').value;
+  var password = document.getElementById('signupPassword').value;
+  var errEl = document.getElementById('signupError');
+  errEl.style.display = 'none';
+
+  var res = await fetch('api/auth/signup', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password })
+    body: JSON.stringify({ email: email, password: password })
   });
-  const data = await res.json();
+  var data = await res.json();
+
   if (res.ok && data.requiresVerification) {
-    // 注册成功，显示验证提示
-    document.getElementById('signupForm').innerHTML = `
-      <div style="text-align:center; padding: 20px;">
-        <h3>Check your email</h3>
-        <p>We've sent a verification link to <strong>${email}</strong>.</p>
-        <p>Click the link in the email to activate your account.</p>
-      </div>
-    `;
+    document.getElementById('signupForm').innerHTML =
+      '<div style="text-align:center; padding: 20px;">' +
+        '<h3>' + t('signupSuccessTitle', 'Check your email') + '</h3>' +
+        '<p>' + t('signupSuccessBody1', "We've sent a verification link to") + ' <strong>' + email + '</strong>.</p>' +
+        '<p>' + t('signupSuccessBody2', 'Click the link in the email to activate your account.') + '</p>' +
+      '</div>';
   } else {
-    document.getElementById('signupError').textContent = data.error;
-    document.getElementById('signupError').style.display = 'block';
+    errEl.textContent = data.error || t('errorSignupFailed', 'Registration failed.');
+    errEl.style.display = 'block';
   }
 }
 </script>
