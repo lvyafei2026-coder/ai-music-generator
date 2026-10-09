@@ -21,8 +21,16 @@ export default {
       return handleApi(request, env, url);
     }
 
+    // 公开分享页：/share/:id 重写到 /share.html
+    const shareMatch = path.match(/^\/share\/[^/]+$/);
+    if (shareMatch) {
+      const newUrl = new URL(request.url);
+      newUrl.pathname = '/share.html';
+      return env.ASSETS.fetch(new Request(newUrl, request));
+    }
+
     // 内部重写：无扩展名的页面路径 → .html 文件
-    const pageRoutes = ['/dashboard', '/login', '/pricing', '/index', '/verify-email', '/enterprise', '/s'];
+    const pageRoutes = ['/dashboard', '/login', '/pricing', '/index', '/verify-email', '/enterprise', '/share'];
     const lastSegment = path.split('/').pop();
     
     if (pageRoutes.includes('/' + lastSegment)) {

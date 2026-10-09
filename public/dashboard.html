@@ -319,7 +319,7 @@ function toggleTaskDetail(taskId) {
 }
 
 function copyShareLink(taskId, el) {
-  var url = window.location.origin + '/music/s/' + taskId;
+  var url = window.location.origin + '/music/share/' + taskId;
   function done(ok) {
     if (!el) return;
     var original = el.textContent;
@@ -476,12 +476,13 @@ if (new URLSearchParams(window.location.search).get('success') === 'true') {
   }, 500);
 }
 </script>
+<!-- Service Worker 暂时禁用：等图标和 MIME 类型全部就位后再启用
 <script>
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', function () {
-    navigator.serviceWorker.register('sw.js').catch(function () {});
-  });
-}
+// if ('serviceWorker' in navigator) {
+//   window.addEventListener('load', function () {
+//     navigator.serviceWorker.register('/music/sw.js').catch(function () {});
+//   });
+// }
 </script>
 </body>
 </html>

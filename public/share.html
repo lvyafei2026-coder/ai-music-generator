@@ -75,11 +75,11 @@
 function t(k, fb) { return (window.__i18n && window.__i18n.t && window.__i18n.t[k]) || fb || k; }
 
 function init() {
-  // 从 URL /music/s/<taskId> 取 taskId
+  // 从 URL /music/share/<taskId> 取 taskId
   var parts = window.location.pathname.split('/').filter(Boolean);
-  // 期望 ['music','s','<taskId>']
+  // 期望 ['music','share','<taskId>']
   var taskId = parts[parts.length - 1];
-  if (!taskId || parts[parts.length - 2] !== 's') {
+  if (!taskId || parts[parts.length - 2] !== 'share') {
     showError('Invalid share link');
     return;
   }

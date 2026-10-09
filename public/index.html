@@ -184,12 +184,13 @@
 
 <script src="js/i18n.js"></script>
 <script src="js/home.js"></script>
+<!-- Service Worker 暂时禁用：等图标和 MIME 类型全部就位后再启用
 <script>
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', function () {
-    navigator.serviceWorker.register('sw.js').catch(function () {});
-  });
-}
+// if ('serviceWorker' in navigator) {
+//   window.addEventListener('load', function () {
+//     navigator.serviceWorker.register('/music/sw.js').catch(function () {});
+//   });
+// }
 </script>
 </body>
 </html>
