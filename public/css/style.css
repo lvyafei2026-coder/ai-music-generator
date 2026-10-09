@@ -109,3 +109,39 @@ p { margin: 0 0 14px; }
 }
 .lang-select:hover { border-color: var(--accent); }
 .lang-select:focus { outline: none; border-color: var(--accent); }
+
+
+/* ---------- Header 导航布局修复 ---------- */
+.header-inner {
+  gap: 16px;
+}
+.header-nav {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 20px;
+  white-space: nowrap;
+}
+.header-nav a {
+  white-space: nowrap;
+}
+.lang-select {
+  margin-left: 8px;
+  flex-shrink: 0;
+}
+
+/* 窄屏下：导航换行、下拉框缩小 */
+@media (max-width: 640px) {
+  .header-inner {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .header-nav {
+    gap: 14px;
+    font-size: 0.85rem;
+  }
+  .lang-select {
+    font-size: 0.8rem;
+    padding: 5px 24px 5px 8px;
+  }
+}
