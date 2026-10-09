@@ -180,7 +180,7 @@ async function handleGetTask(request, env, url) {
       return json({
         taskId: task.id,
         status: task.status,
-        audioUrl: `/api/audio/${task.audio_key}`,
+        audioUrl: `/ai-music-generator/api/audio/${task.audio_key}`,
         prompt: task.prompt
       });
     }
@@ -207,7 +207,7 @@ async function handleListTasks(request, env) {
         id: t.id,
         prompt: t.prompt,
         status: t.status,
-        audioUrl: t.audio_key && t.status === 'completed' ? `/api/audio/${t.audio_key}` : null,
+        audioUrl: t.audio_key && t.status === 'completed' ? `/ai-music-generator/api/audio/${t.audio_key}` : null,
         createdAt: t.created_at
       }))
     });
