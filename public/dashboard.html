@@ -25,13 +25,16 @@
 
   <!-- ========== 用量卡（紧凑版） ========== -->
   <div class="card usage-card-compact">
-    <div class="usage-row">
+    <div class="usage-top">
       <div class="usage-left">
         <span class="usage-big"><span id="remainingCount">—</span> <span class="usage-big-unit" data-i18n="remainingUnit">songs</span></span>
         <span class="usage-sub" data-i18n="remainingLabel">Remaining:</span>
         <span id="usageFraction" class="usage-fraction">— / —</span>
       </div>
       <div class="usage-right">
+        <span id="userEmailTop" class="user-email-top">—</span>
+        <span class="usage-divider">·</span>
+        <span id="proStatus" class="pro-status-inline" style="display:none;" data-i18n="proActive">✓ Pro subscription active</span>
         <span id="planBadge" class="plan-badge free" data-i18n="planFree">Free</span>
         <a href="pricing.html" class="btn-primary small" id="upgradeBtn" data-i18n="upgradeBtn">Upgrade to Pro</a>
       </div>
@@ -39,7 +42,6 @@
     <div class="usage-bar-wrap">
       <div class="usage-bar" id="usageBar"></div>
     </div>
-    <p id="proStatus" class="pro-status" style="display:none;" data-i18n="proActive">✓ Pro subscription active</p>
   </div>
 
   <!-- ========== 左右布局 ========== -->
@@ -95,12 +97,6 @@
 
   </div>
 
-  <!-- 底部小字：登录账号 -->
-  <p class="dash-footer-line">
-    <span data-i18n="signedInAs">Signed in as:</span>
-    <strong id="userEmail">—</strong>
-  </p>
-
 </main>
 
 <script src="js/i18n.js"></script>
@@ -121,7 +117,7 @@ async function loadUser() {
   var data = await res.json();
   var u = data.user;
 
-  var emailEl = document.getElementById('userEmail');
+  var emailEl = document.getElementById('userEmailTop');
   if (emailEl) emailEl.textContent = u.email;
 
   var isPro = u.plan === 'pro';

@@ -1293,3 +1293,70 @@ body.page-dark .footer a:hover { color: #a855f7; text-decoration: underline; }
   color: #6a6a7a;
 }
 .dash-footer-line strong { color: #a0a0b0; }
+
+
+/* ============================================================
+   Dashboard 微调：用量卡顶部布局 + 页面加宽 + 下拉框重影修复
+   ============================================================ */
+
+/* 页面加宽（只作用于 dashboard / pricing，不影响首页） */
+body.page-dark .wrap {
+  max-width: 1120px;
+}
+body.page-dark .wrap.narrow {
+  max-width: 480px;
+}
+
+/* 用量卡顶部：左余额 + 右用户/Pro/徽章 */
+.usage-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.usage-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.user-email-top {
+  font-size: 0.85rem;
+  color: #a0a0b0;
+  font-weight: 500;
+}
+.usage-divider {
+  color: #4a4a5a;
+  font-size: 0.85rem;
+}
+.pro-status-inline {
+  font-size: 0.8rem;
+  color: #4ade80;
+  font-weight: 600;
+}
+
+/* ============================================================
+   语言下拉框重影修复（深色 + 浅色通用）
+   ============================================================ */
+.lang-select {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  background-repeat: no-repeat !important;
+  background-position: right 8px center !important;
+  background-size: 11px !important;
+  padding-right: 26px !important;
+  text-indent: 0;
+}
+.lang-select::-ms-expand { display: none; }
+/* 深色主题下的箭头颜色 */
+body.page-dark .lang-select,
+body.home-dark .lang-select {
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a0a0b0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e") !important;
+}
+/* 浅色主题下的箭头颜色 */
+body:not(.page-dark):not(.home-dark) .lang-select {
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e") !important;
+}
