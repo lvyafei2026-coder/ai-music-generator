@@ -1,5 +1,5 @@
 (function () {
-  var API_BASE = '/ai-music-generator';
+  var API_BASE = '/music';
   var STORAGE_KEY = 'pendingPrompt';
 
   // ---------- 预览卡轮播 ----------

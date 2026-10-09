@@ -107,7 +107,7 @@
 
 <script src="js/i18n.js"></script>
 <script>
-var API_BASE = '/ai-music-generator';
+var API_BASE = '/music';
 var currentTaskId = null;
 var pollInterval = null;
 var currentTab = 'completed';
@@ -284,6 +284,35 @@ function renderTasks() {
 
 function statusLabelSafe(key, fallback) {
   return t(key, fallback);
+}
+
+function toggleTaskDetail(taskId) {
+  var el = document.getElementById('detail-' + taskId);
+  var link = document.getElementById('detail-toggle-' + taskId);
+  if (!el || !link) return;
+  var visible = el.style.display !== 'none';
+  el.style.display = visible ? 'none' : 'block';
+  link.textContent = visible ? t('taskDetails', 'Details') : t('taskHide', 'Hide');
+}
+
+function reuseTask(taskId) {
+  var task = allTasks.find(function (x) { return x.id === taskId; });
+  if (!task) return;
+
+  var promptEl = document.getElementById('prompt');
+  var lyricsEl = document.getElementById('lyrics');
+  var durationEl = document.getElementById('duration');
+  var instEl = document.getElementById('instrumental');
+
+  if (promptEl) promptEl.value = task.prompt || '';
+  if (lyricsEl) lyricsEl.value = task.lyrics || '';
+  if (durationEl) durationEl.value = task.duration || 120;
+  if (instEl) instEl.checked = !!task.isInstrumental;
+
+  if (promptEl) {
+    promptEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    promptEl.focus();
+  }
 }
 
 async function retryTask(taskId) {

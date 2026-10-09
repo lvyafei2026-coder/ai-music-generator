@@ -154,5 +154,17 @@
   "statusGenerating": "Generating",
   "statusPending": "Pending",
   "statusFailed": "Failed",
-  "tabGenerating": "Generating"
+  "tabGenerating": "Generating",
+  "taskDetails": "Details",
+  "taskHide": "Hide",
+  "taskReuse": "Reuse",
+  "detailPrompt": "Prompt",
+  "detailLyrics": "Lyrics",
+  "detailDuration": "Duration",
+  "detailInstrumental": "Instrumental",
+  "detailCreated": "Created",
+  "detailYes": "Yes",
+  "detailNo": "No",
+  "detailNoLyrics": "(none)",
+  "reuseFilled": "Parameters loaded. You can edit and generate again."
 }

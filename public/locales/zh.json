@@ -154,5 +154,17 @@
   "statusGenerating": "生成中",
   "statusPending": "排队中",
   "statusFailed": "失败",
-  "tabGenerating": "生成中"
+  "tabGenerating": "生成中",
+  "taskDetails": "详情",
+  "taskHide": "收起",
+  "taskReuse": "复用",
+  "detailPrompt": "描述",
+  "detailLyrics": "歌词",
+  "detailDuration": "时长",
+  "detailInstrumental": "纯音乐",
+  "detailCreated": "创建时间",
+  "detailYes": "是",
+  "detailNo": "否",
+  "detailNoLyrics": "（无）",
+  "reuseFilled": "参数已填入左侧，可以修改后重新生成。"
 }

@@ -1415,3 +1415,63 @@ body.page-dark .support-block a:hover {
   color: #a855f7;
   text-decoration: underline;
 }
+
+
+/* ============================================================
+   Task 详情 / 复用（弱化样式）
+   ============================================================ */
+.task-links {
+  display: flex;
+  gap: 14px;
+  margin-top: 8px;
+  font-size: 0.82rem;
+}
+.task-text-link {
+  color: #8a8a99;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+.task-text-link:hover { color: #c9b5ff; }
+.task-text-link-accent {
+  color: #a855f7;
+}
+.task-text-link-accent:hover { color: #ec4899; }
+
+.task-detail {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  font-size: 0.85rem;
+  color: #a0a0b0;
+}
+.task-detail-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 6px;
+  align-items: flex-start;
+}
+.task-detail-row > span {
+  flex-shrink: 0;
+  width: 76px;
+  color: #6a6a7a;
+  font-weight: 600;
+}
+.task-detail-row > div {
+  flex: 1;
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+.task-detail-lyrics {
+  max-height: 140px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+.task-detail .muted { color: #6a6a7a; font-style: italic; }
+
+/* task-item 布局微调 */
+.task-item {
+  flex-wrap: wrap;
+}
+.task-item .task-info { flex: 1 1 200px; }
+.task-item .task-links { flex-basis: 100%; }

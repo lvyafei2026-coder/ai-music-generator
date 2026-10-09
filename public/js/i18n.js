@@ -6,7 +6,7 @@
 
   function getBase() {
     var p = window.location.pathname;
-    var marker = '/ai-music-generator';
+    var marker = '/music';
     var idx = p.indexOf(marker);
     if (idx !== -1) return p.slice(0, idx + marker.length);
     return '';
