@@ -1632,3 +1632,27 @@ body.page-dark .support-block a:hover {
 .footer-enterprise a:hover {
   text-decoration: underline;
 }
+
+
+/* ============================================================
+   Enterprise 页头部与正文间距 + 导航不拥挤
+   ============================================================ */
+.header.header-dark {
+  background: rgba(10,10,15,0.92) !important;
+  border-bottom: 1px solid rgba(255,255,255,0.08) !important;
+}
+.header .header-inner .header-nav {
+  gap: 18px !important;
+}
+.header .header-inner .header-nav a {
+  font-size: 0.9rem;
+  color: #a0a0b0;
+  text-decoration: none;
+  transition: color 0.15s;
+}
+.header .header-inner .header-nav a:hover { color: #a855f7; }
+
+/* 企业页首屏留白 */
+.ent-hero {
+  margin: 64px 0 56px !important;
+}
