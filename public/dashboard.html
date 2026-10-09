@@ -22,65 +22,84 @@
 </header>
 
 <main class="wrap no-hero">
-  <div class="card user-card">
-    <p><span data-i18n="signedInAs">Signed in as:</span> <strong id="userEmail">—</strong></p>
-    <p id="proStatus" style="display:none; color:#059669; font-weight:600;" data-i18n="proActive">✓ Pro subscription active</p>
-  </div>
 
-  <div class="card usage-card">
-    <div class="usage-header">
-      <h2 data-i18n="yourPlan">Your Plan</h2>
-      <span id="planBadge" class="plan-badge free" data-i18n="planFree">Free</span>
+  <!-- ========== 用量卡（紧凑版） ========== -->
+  <div class="card usage-card-compact">
+    <div class="usage-row">
+      <div class="usage-left">
+        <span class="usage-big"><span id="remainingCount">—</span> <span class="usage-big-unit" data-i18n="remainingUnit">songs</span></span>
+        <span class="usage-sub" data-i18n="remainingLabel">Remaining:</span>
+        <span id="usageFraction" class="usage-fraction">— / —</span>
+      </div>
+      <div class="usage-right">
+        <span id="planBadge" class="plan-badge free" data-i18n="planFree">Free</span>
+        <a href="pricing.html" class="btn-primary small" id="upgradeBtn" data-i18n="upgradeBtn">Upgrade to Pro</a>
+      </div>
     </div>
     <div class="usage-bar-wrap">
       <div class="usage-bar" id="usageBar"></div>
     </div>
-    <p class="usage-text" id="usageText">0 / 3 generations used this month</p>
-    <a href="pricing.html" class="btn-primary small" id="upgradeBtn" data-i18n="upgradeBtn">Upgrade to Pro</a>
+    <p id="proStatus" class="pro-status" style="display:none;" data-i18n="proActive">✓ Pro subscription active</p>
   </div>
 
-  <div class="card">
-    <h2 data-i18n="createSong">Create a Song</h2>
-    <label data-i18n="labelPrompt">Describe your song</label>
-    <textarea id="prompt" rows="3" data-i18n-placeholder="promptPlaceholder" placeholder="An upbeat electronic dance track with female vocals about summer nights"></textarea>
+  <!-- ========== 左右布局 ========== -->
+  <div class="dash-grid">
 
-    <label data-i18n="labelDuration">Duration (seconds, 10–300)</label>
-    <input type="number" id="duration" min="10" max="300" step="10" value="120" inputmode="numeric">
+    <!-- 左：创作 -->
+    <div class="card create-card">
+      <h2 data-i18n="createSong">Create a Song</h2>
 
-    <label data-i18n="labelLyrics">Lyrics (optional — leave blank for AI-generated lyrics)</label>
-    <textarea id="lyrics" rows="4" data-i18n-placeholder="lyricsPlaceholder" placeholder="Paste your own lyrics here, or leave blank..."></textarea>
+      <label data-i18n="labelPrompt">Describe your song</label>
+      <textarea id="prompt" rows="3" data-i18n-placeholder="promptPlaceholder" placeholder="An upbeat electronic dance track with female vocals about summer nights"></textarea>
 
-    <div class="lyrics-tools" id="lyricsTools">
-      <button type="button" class="lyrics-tool-btn" onclick="aiGenerateLyrics()">
-        ✨ <span data-i18n="btnGenLyrics">Generate lyrics</span>
-      </button>
-      <button type="button" class="lyrics-tool-btn" onclick="aiOptimizeLyrics()">
-        📝 <span data-i18n="btnOptLyrics">Improve lyrics</span>
-      </button>
-      <span class="lyrics-hint" id="lyricsHint"></span>
+      <label data-i18n="labelDuration">Duration (seconds, 10–300)</label>
+      <input type="number" id="duration" min="10" max="300" step="10" value="120" inputmode="numeric">
+
+      <label data-i18n="labelLyrics">Lyrics (optional — leave blank for AI-generated lyrics)</label>
+      <textarea id="lyrics" rows="5" data-i18n-placeholder="lyricsPlaceholder" placeholder="Paste your own lyrics here, or leave blank..."></textarea>
+
+      <div class="lyrics-tools" id="lyricsTools">
+        <button type="button" class="lyrics-tool-btn" onclick="aiGenerateLyrics()">
+          ✨ <span data-i18n="btnGenLyrics">Generate lyrics</span>
+        </button>
+        <button type="button" class="lyrics-tool-btn" onclick="aiOptimizeLyrics()">
+          📝 <span data-i18n="btnOptLyrics">Improve lyrics</span>
+        </button>
+        <span class="lyrics-hint" id="lyricsHint"></span>
+      </div>
+
+      <label class="checkbox-label">
+        <input type="checkbox" id="instrumental"> <span data-i18n="labelInstrumental">Instrumental only (no vocals)</span>
+      </label>
+      <button class="calc" id="generateBtn" onclick="generate()" data-i18n="btnGenerate">Generate Song</button>
+      <div id="genError" class="error" style="display:none;"></div>
+      <div id="genLoading" class="loading" style="display:none;">
+        <div class="spinner"></div>
+        <div data-i18n="generating">Generating your song... This takes 1-3 minutes.</div>
+      </div>
     </div>
 
-    <label class="checkbox-label">
-      <input type="checkbox" id="instrumental"> <span data-i18n="labelInstrumental">Instrumental only (no vocals)</span>
-    </label>
-    <button class="calc" id="generateBtn" onclick="generate()" data-i18n="btnGenerate">Generate Song</button>
-    <div id="genError" class="error" style="display:none;"></div>
-    <div id="genLoading" class="loading" style="display:none;">
-      <div class="spinner"></div>
-      <div data-i18n="generating">Generating your song... This takes 1-3 minutes.</div>
+    <!-- 右：歌曲列表 -->
+    <div class="card songs-card">
+      <div class="songs-header">
+        <h2 data-i18n="yourSongs">Your Songs</h2>
+        <div class="tabs" id="taskTabs">
+          <button class="tab" data-tab="all" onclick="switchTaskTab('all')" data-i18n="tabAll">All</button>
+          <button class="tab active" data-tab="completed" onclick="switchTaskTab('completed')" data-i18n="tabCompleted">Completed</button>
+          <button class="tab" data-tab="failed" onclick="switchTaskTab('failed')" data-i18n="tabFailed">Failed</button>
+        </div>
+      </div>
+      <div id="taskList" class="task-list"></div>
+      <p id="emptyTasks" class="empty-state" data-i18n="emptyTasks">No songs yet. Create your first one above.</p>
     </div>
+
   </div>
 
-  <div class="card">
-    <h2 data-i18n="yourSongs">Your Songs</h2>
-    <div id="taskList" class="task-list"></div>
-    <p id="emptyTasks" class="empty-state" data-i18n="emptyTasks">No songs yet. Create your first one above.</p>
-  </div>
-
-  <section class="support-block" id="supportBlock">
-    <h3 data-i18n="supportTitle">Need help or business inquiry?</h3>
-    <p><span data-i18n="supportBody">Email us at</span> <a href="mailto:lvyafei2026@gmail.com">lvyafei2026@gmail.com</a></p>
-  </section>
+  <!-- 底部小字：登录账号 -->
+  <p class="dash-footer-line">
+    <span data-i18n="signedInAs">Signed in as:</span>
+    <strong id="userEmail">—</strong>
+  </p>
 
 </main>
 
@@ -89,6 +108,8 @@
 var API_BASE = '/ai-music-generator';
 var currentTaskId = null;
 var pollInterval = null;
+var currentTab = 'completed';
+var allTasks = [];
 
 function t(key, fallback) {
   return (window.__i18n && window.__i18n.t && window.__i18n.t[key]) || fallback || key;
@@ -108,18 +129,21 @@ async function loadUser() {
   badge.textContent = isPro ? t('planPro', 'Pro') : t('planFree', 'Free');
   badge.className = 'plan-badge ' + (isPro ? 'pro' : 'free');
 
-  var pct = u.generations_limit > 0 ? (u.generations_used / u.generations_limit * 100) : 0;
+  var used = u.generations_used || 0;
+  var limit = u.generations_limit || 3;
+  var remaining = Math.max(0, limit - used);
+
+  document.getElementById('remainingCount').textContent = remaining;
+  document.getElementById('usageFraction').textContent = used + ' / ' + limit;
+
+  var pct = limit > 0 ? (used / limit * 100) : 0;
   document.getElementById('usageBar').style.width = Math.min(pct, 100) + '%';
-  document.getElementById('usageText').textContent =
-    t('usageText', '{used} / {limit} generations used this month')
-      .replace('{used}', u.generations_used)
-      .replace('{limit}', u.generations_limit);
 
   var proStatus = document.getElementById('proStatus');
   if (proStatus) proStatus.style.display = isPro ? 'block' : 'none';
   if (isPro) document.getElementById('upgradeBtn').style.display = 'none';
 
-  if (u.generations_used >= u.generations_limit) {
+  if (remaining <= 0) {
     var btn = document.getElementById('generateBtn');
     btn.disabled = true;
     btn.textContent = t('limitReached', 'Limit reached — Upgrade to Pro');
@@ -191,6 +215,8 @@ function pollTask(taskId) {
       document.getElementById('genError').textContent = data.error || t('errorGeneration', 'Generation failed.');
       document.getElementById('genError').style.display = 'block';
       document.getElementById('generateBtn').disabled = false;
+      loadTasks();
+      loadUser();
     }
   }, 5000);
 }
@@ -198,24 +224,72 @@ function pollTask(taskId) {
 async function loadTasks() {
   var res = await fetch(API_BASE + '/api/tasks');
   var data = await res.json();
+  allTasks = data.tasks || [];
+  renderTasks();
+}
+
+function switchTaskTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('#taskTabs .tab').forEach(function (b) {
+    b.classList.toggle('active', b.getAttribute('data-tab') === tab);
+  });
+  renderTasks();
+}
+
+function statusLabel(status) {
+  if (status === 'completed') return t('statusCompleted', 'Completed');
+  if (status === 'generating') return t('statusGenerating', 'Generating');
+  if (status === 'pending') return t('statusPending', 'Pending');
+  if (status === 'failed') return t('statusFailed', 'Failed');
+  return status;
+}
+
+function renderTasks() {
   var list = document.getElementById('taskList');
   var empty = document.getElementById('emptyTasks');
-  if (!data.tasks || data.tasks.length === 0) {
+
+  var filtered = allTasks;
+  if (currentTab === 'completed') {
+    filtered = allTasks.filter(function (t) { return t.status === 'completed'; });
+  } else if (currentTab === 'failed') {
+    filtered = allTasks.filter(function (t) { return t.status === 'failed'; });
+  }
+
+  if (!filtered.length) {
     empty.style.display = 'block';
     list.innerHTML = '';
     return;
   }
   empty.style.display = 'none';
-  list.innerHTML = data.tasks.map(function (t) {
+
+  list.innerHTML = filtered.map(function (t) {
     var url = t.audioUrl ? (API_BASE + t.audioUrl) : '';
+    var retryBtn = t.status === 'failed'
+      ? '<button class="retry-btn" onclick="retryTask(\'' + t.id + '\')">↻ ' + statusLabelSafe('retryBtn', 'Retry') + '</button>'
+      : '';
     return '<div class="task-item">' +
       '<div class="task-info">' +
         '<div class="task-prompt">' + escapeHtml(t.prompt).slice(0, 100) + '</div>' +
-        '<div class="task-status ' + t.status + '">' + t.status + '</div>' +
+        '<div class="task-status ' + t.status + '">' + statusLabel(t.status) + '</div>' +
       '</div>' +
       (url ? '<audio controls src="' + url + '"></audio>' : '') +
+      retryBtn +
     '</div>';
   }).join('');
+}
+
+function statusLabelSafe(key, fallback) {
+  return t(key, fallback);
+}
+
+async function retryTask(taskId) {
+  var task = allTasks.find(function (t) { return t.id === taskId; });
+  if (!task) return;
+  var promptEl = document.getElementById('prompt');
+  if (promptEl && task.prompt) {
+    promptEl.value = task.prompt;
+    promptEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
 }
 
 function escapeHtml(s) {
@@ -229,19 +303,7 @@ async function doLogout() {
   window.location.href = './';
 }
 
-document.addEventListener('i18n-ready', function () {
-  // prompt-url-fill
-  var params = new URLSearchParams(window.location.search);
-  var promptParam = params.get('prompt');
-  if (promptParam) {
-    var promptEl = document.getElementById('prompt');
-    if (promptEl) promptEl.value = promptParam;
-  }
-  loadUser();
-  loadTasks();
-});
-
-// ==================== AI 歌词 ====================
+// ---------- AI 歌词 ----------
 function setLyricsHint(msg, isError) {
   var el = document.getElementById('lyricsHint');
   if (!el) return;
@@ -257,7 +319,6 @@ async function aiGenerateLyrics() {
   var promptEl = document.getElementById('prompt');
   var topic = promptEl ? promptEl.value.trim() : '';
 
-  // 未填描述：红框 + 提示
   if (!topic || topic.length < 5) {
     promptEl.classList.add('input-error');
     setLyricsHint(t('lyricsPromptEmpty', 'Please describe your song first.'), true);
@@ -319,6 +380,17 @@ async function aiOptimizeLyrics() {
     if (btn) btn.disabled = false;
   }
 }
+
+document.addEventListener('i18n-ready', function () {
+  var params = new URLSearchParams(window.location.search);
+  var promptParam = params.get('prompt');
+  if (promptParam) {
+    var promptEl = document.getElementById('prompt');
+    if (promptEl) promptEl.value = promptParam;
+  }
+  loadUser();
+  loadTasks();
+});
 
 if (new URLSearchParams(window.location.search).get('success') === 'true') {
   setTimeout(function () {

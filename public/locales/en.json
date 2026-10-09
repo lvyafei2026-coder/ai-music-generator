@@ -142,5 +142,16 @@
   "lyricsPromptHint": "Based on your description above",
   "supportTitle": "Need help or business inquiry?",
   "supportBody": "Email us at",
-  "supportFooter": "Support & business:"
+  "supportFooter": "Support & business:",
+  "remainingLabel": "Remaining:",
+  "remainingUnit": "songs",
+  "songsLeftShort": "left",
+  "tabAll": "All",
+  "tabCompleted": "Completed",
+  "tabFailed": "Failed",
+  "retryBtn": "Retry",
+  "statusCompleted": "Completed",
+  "statusGenerating": "Generating",
+  "statusPending": "Pending",
+  "statusFailed": "Failed"
 }

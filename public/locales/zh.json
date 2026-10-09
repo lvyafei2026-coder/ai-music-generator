@@ -142,5 +142,16 @@
   "lyricsPromptHint": "根据上方描述生成",
   "supportTitle": "遇到问题或商务合作？",
   "supportBody": "请发邮件至",
-  "supportFooter": "支持与商务："
+  "supportFooter": "支持与商务：",
+  "remainingLabel": "剩余：",
+  "remainingUnit": "首",
+  "songsLeftShort": "首",
+  "tabAll": "全部",
+  "tabCompleted": "已完成",
+  "tabFailed": "失败",
+  "retryBtn": "重试",
+  "statusCompleted": "已完成",
+  "statusGenerating": "生成中",
+  "statusPending": "排队中",
+  "statusFailed": "失败"
 }

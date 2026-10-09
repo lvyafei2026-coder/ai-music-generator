@@ -1,3 +1,5 @@
+import { decrementUsage } from './db.js';
+
 export default {
   async queue(batch, env, ctx) {
     console.log('[Queue] Batch received, messages: ' + batch.messages.length);

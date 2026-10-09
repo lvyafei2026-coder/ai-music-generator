@@ -1152,3 +1152,144 @@ body.page-dark .footer a:hover { color: #a855f7; text-decoration: underline; }
   word-break: break-all;
 }
 .support-block a:hover { text-decoration: underline; }
+
+
+/* ============================================================
+   Dashboard 重排：紧凑用量卡 + 左右布局 + tab
+   ============================================================ */
+
+/* 用量卡紧凑版 */
+.usage-card-compact {
+  padding: 18px 22px;
+  margin-bottom: 22px;
+}
+.usage-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.usage-left {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.usage-big {
+  font-size: 1.9rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #f0f0f5;
+}
+.usage-big-unit {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #8a8a99;
+  margin-left: 2px;
+}
+.usage-sub {
+  font-size: 0.8rem;
+  color: #8a8a99;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+}
+.usage-fraction {
+  font-size: 0.9rem;
+  color: #a0a0b0;
+  font-weight: 600;
+}
+.usage-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.pro-status {
+  margin: 8px 0 0;
+  font-size: 0.8rem;
+  color: #4ade80;
+  font-weight: 600;
+}
+
+/* 左右布局 */
+.dash-grid {
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: 22px;
+  align-items: start;
+}
+@media (max-width: 1000px) {
+  .dash-grid { grid-template-columns: 1fr; }
+}
+
+/* 创作卡 */
+.create-card h2 { margin-bottom: 16px; }
+
+/* 歌曲卡 */
+.songs-card {
+  display: flex;
+  flex-direction: column;
+  max-height: 720px;
+}
+.songs-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+.songs-header h2 { margin: 0; }
+.tabs {
+  display: flex;
+  gap: 4px;
+  background: rgba(255,255,255,0.05);
+  padding: 3px;
+  border-radius: 9px;
+}
+.tab {
+  padding: 6px 12px;
+  border-radius: 7px;
+  border: none;
+  background: transparent;
+  color: #8a8a99;
+  font-size: 0.8rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.tab:hover { color: #c0c0cc; }
+.tab.active {
+  background: rgba(168,85,247,0.18);
+  color: #c9b5ff;
+}
+.task-list {
+  overflow-y: auto;
+  flex: 1;
+  padding-right: 4px;
+}
+.retry-btn {
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(168,85,247,0.4);
+  background: rgba(168,85,247,0.12);
+  color: #c9b5ff;
+  font-size: 0.8rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.retry-btn:hover { background: rgba(168,85,247,0.22); }
+
+/* 底部小字 */
+.dash-footer-line {
+  text-align: center;
+  margin: 32px 0 0;
+  font-size: 0.82rem;
+  color: #6a6a7a;
+}
+.dash-footer-line strong { color: #a0a0b0; }

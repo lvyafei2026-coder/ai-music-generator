@@ -31,6 +31,12 @@ export async function incrementUsage(env, userId) {
   ).bind(Date.now(), userId).run();
 }
 
+export async function decrementUsage(env, userId) {
+  await env.DB.prepare(
+    'UPDATE users SET generations_used = MAX(0, generations_used - 1), updated_at = ? WHERE id = ?'
+  ).bind(Date.now(), userId).run();
+}
+
 export async function createSession(env, { id, userId, expiresAt }) {
   await env.DB.prepare(
     'INSERT INTO sessions (id, user_id, expires_at, created_at) VALUES (?, ?, ?, ?)'
