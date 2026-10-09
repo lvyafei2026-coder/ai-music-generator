@@ -109,5 +109,21 @@
   "uc3Body": "生日歌、婚礼礼物、游戏原型——描述它，就能得到一首完整的歌。",
   "ctaBottomTitle": "准备好创作你的第一首歌了吗？",
   "ctaBottomBody": "免费账户每月 3 首，无需信用卡。",
-  "ctaBottomBtn": "免费开始"
+  "ctaBottomBtn": "免费开始",
+  "heroTitle": "AI 音乐生成器",
+  "heroSubtitle": "描述你想要的歌曲，几分钟内得到一首带人声或纯音乐的完整曲目。",
+  "heroInputPlaceholder": "一首温暖的爵士钢琴曲，适合雨夜聆听……",
+  "heroGenerateBtn": "开始生成",
+  "heroPreviewLabel": "正在播放",
+  "heroPreviewTag": "带人声",
+  "heroPreviewTitle": "中文流行情歌",
+  "feat1Title": "AI 写词",
+  "feat1Body": "描述一个主题，自动生成带主歌和副歌结构的歌词。",
+  "feat2Title": "10–300 秒",
+  "feat2Body": "自由选择时长。按秒计费，10 秒起。",
+  "feat3Title": "中英双语",
+  "feat3Body": "英文和中文的 prompt 与歌词，原生质量。",
+  "demoComingSoon": "即将上线",
+  "demoTag3": "Lo-fi 嘻哈",
+  "demoTag4": "史诗电影感"
 }

@@ -214,6 +214,13 @@ async function doLogout() {
 }
 
 document.addEventListener('i18n-ready', function () {
+  // prompt-url-fill
+  var params = new URLSearchParams(window.location.search);
+  var promptParam = params.get('prompt');
+  if (promptParam) {
+    var promptEl = document.getElementById('prompt');
+    if (promptEl) promptEl.value = promptParam;
+  }
   loadUser();
   loadTasks();
 });

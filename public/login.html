@@ -73,7 +73,14 @@ async function doLogin() {
   var data = await res.json();
 
   if (res.ok) {
-    window.location.href = 'dashboard.html';
+    // pendingPrompt-redirect
+    var pending = localStorage.getItem('pendingPrompt');
+    if (pending) {
+      localStorage.removeItem('pendingPrompt');
+      window.location.href = 'dashboard.html?prompt=' + encodeURIComponent(pending);
+    } else {
+      window.location.href = 'dashboard.html';
+    }
   } else if (data.code === 'EMAIL_NOT_VERIFIED') {
     errEl.innerHTML = t('emailNotVerified', 'Please verify your email first.') +
       ' <a href="#" onclick="resendVerification(\'' + email + '\'); return false;">' +

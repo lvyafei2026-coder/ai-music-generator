@@ -109,5 +109,21 @@
   "uc3Body": "Birthday songs, wedding gifts, game prototypes — describe it and get a full track.",
   "ctaBottomTitle": "Ready to create your first song?",
   "ctaBottomBody": "Free account, 3 songs per month. No credit card required.",
-  "ctaBottomBtn": "Start for free"
+  "ctaBottomBtn": "Start for free",
+  "heroTitle": "AI Music Generator",
+  "heroSubtitle": "Describe the song you want. Get a full track with vocals or instrumental in minutes.",
+  "heroInputPlaceholder": "A warm jazz piano piece for a rainy evening...",
+  "heroGenerateBtn": "Generate",
+  "heroPreviewLabel": "Now playing",
+  "heroPreviewTag": "With vocals",
+  "heroPreviewTitle": "Chinese pop ballad",
+  "feat1Title": "AI lyric writing",
+  "feat1Body": "Describe a topic, get structured lyrics with verse and chorus.",
+  "feat2Title": "10–300 seconds",
+  "feat2Body": "Choose the exact length. Billed by the second, 10s minimum.",
+  "feat3Title": "Bilingual output",
+  "feat3Body": "English and Chinese prompts and lyrics, native quality.",
+  "demoComingSoon": "Coming soon",
+  "demoTag3": "Lo-fi hip hop",
+  "demoTag4": "Epic cinematic"
 }
