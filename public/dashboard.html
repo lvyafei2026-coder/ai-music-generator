@@ -6,8 +6,8 @@
 <title data-i18n="dashTitle">Dashboard — AI Music Generator</title>
 <link rel="stylesheet" href="css/style.css">
 </head>
-<body>
-<header class="header">
+<body class="page-dark">
+<header class="header header-dark">
   <div class="header-inner">
     <a href="/" class="logo"><span class="logo-mark">T</span> toolara.dev</a>
     <nav class="header-nav">
@@ -55,7 +55,7 @@
         ✨ <span data-i18n="btnGenLyrics">Generate lyrics</span>
       </button>
       <button type="button" class="lyrics-tool-btn" onclick="aiOptimizeLyrics()">
-        🪄 <span data-i18n="btnOptLyrics">Improve lyrics</span>
+        📝 <span data-i18n="btnOptLyrics">Improve lyrics</span>
       </button>
       <span class="lyrics-hint" id="lyricsHint"></span>
     </div>
@@ -76,6 +76,12 @@
     <div id="taskList" class="task-list"></div>
     <p id="emptyTasks" class="empty-state" data-i18n="emptyTasks">No songs yet. Create your first one above.</p>
   </div>
+
+  <section class="support-block" id="supportBlock">
+    <h3 data-i18n="supportTitle">Need help or business inquiry?</h3>
+    <p><span data-i18n="supportBody">Email us at</span> <a href="mailto:lvyafei2026@gmail.com">lvyafei2026@gmail.com</a></p>
+  </section>
+
 </main>
 
 <script src="js/i18n.js"></script>

@@ -139,5 +139,8 @@
   "lyricsFailed": "失败，请重试。",
   "lyricsEmpty": "请先输入一些歌词。",
   "lyricsPromptEmpty": "请先描述你的歌曲。",
-  "lyricsPromptHint": "根据上方描述生成"
+  "lyricsPromptHint": "根据上方描述生成",
+  "supportTitle": "遇到问题或商务合作？",
+  "supportBody": "请发邮件至",
+  "supportFooter": "支持与商务："
 }

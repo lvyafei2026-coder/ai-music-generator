@@ -139,5 +139,8 @@
   "lyricsFailed": "Failed. Please try again.",
   "lyricsEmpty": "Please write some lyrics first.",
   "lyricsPromptEmpty": "Please describe your song first.",
-  "lyricsPromptHint": "Based on your description above"
+  "lyricsPromptHint": "Based on your description above",
+  "supportTitle": "Need help or business inquiry?",
+  "supportBody": "Email us at",
+  "supportFooter": "Support & business:"
 }
