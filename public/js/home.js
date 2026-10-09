@@ -11,7 +11,7 @@
       titleKey: 'demoTag2',
       titleFallback: 'Chinese pop ballad',
       coverClass: 'preview-cover-pop',
-      src: 'https://toolara.dev/ai-music-generator/api/audio/music/usr_63b993afc756d95b5fd41b62/2d2c630d-f017-4ba2-b730-9163fb4bb81e.mp3'
+      src: 'demo/chinese-pop.mp3'
     },
     {
       emoji: '🎹',
@@ -20,7 +20,7 @@
       titleKey: 'demoTag1',
       titleFallback: 'Warm jazz piano',
       coverClass: 'preview-cover-jazz',
-      src: 'https://toolara.dev/ai-music-generator/api/audio/music/usr_63b993afc756d95b5fd41b62/f50105c1-117e-41be-8fc8-7093ecb0a54b.mp3'
+      src: 'demo/jazz-piano.mp3'
     }
   ];
 
