@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title data-i18n="shareTitle">A song made with AI</title>
-<link rel="stylesheet" href="/music/css/style.css">
-<link rel="manifest" href="/music/manifest.json">
+<link rel="stylesheet" href="/css/style.css">
+<link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#a855f7">
 </head>
 <body class="page-dark">
@@ -70,7 +70,7 @@
   <p><span data-i18n="sharePoweredBy">Made with AI Music Generator</span> · <a href="/music/">toolara.dev</a></p>
 </footer>
 
-<script src="/music/js/i18n.js"></script>
+<script src="/js/i18n.js"></script>
 <script>
 function t(k, fb) { return (window.__i18n && window.__i18n.t && window.__i18n.t[k]) || fb || k; }
 
@@ -84,7 +84,7 @@ function init() {
     return;
   }
 
-  fetch('/music/api/share/' + encodeURIComponent(taskId))
+  fetch('/api/share/' + encodeURIComponent(taskId))
     .then(function (r) { return r.json(); })
     .then(function (data) {
       if (data.error) { showError(data.error); return; }
