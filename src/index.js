@@ -22,7 +22,7 @@ export default {
     }
 
     // 内部重写：无扩展名的页面路径 → .html 文件
-    const pageRoutes = ['/dashboard', '/login', '/pricing', '/index', '/verify-email', '/enterprise'];
+    const pageRoutes = ['/dashboard', '/login', '/pricing', '/index', '/verify-email', '/enterprise', '/s'];
     const lastSegment = path.split('/').pop();
     
     if (pageRoutes.includes('/' + lastSegment)) {
@@ -70,6 +70,14 @@ async function handleApi(request, env, url) {
   }
   if (path.endsWith('/api/billing/webhook') && method === 'POST') {
     return handlePayPalWebhook(request, env);
+  }
+
+  // ==================== 公开分享 ====================
+  if (path.includes('/api/share/audio/') && method === 'GET') {
+    return handleShareAudio(request, env, url);
+  }
+  if (path.includes('/api/share/') && method === 'GET') {
+    return handleShareGet(request, env, url);
   }
 
   // ==================== AI 歌词 ====================
@@ -256,6 +264,62 @@ async function handleGetAudio(request, env, url) {
     });
   } catch (err) {
     console.error('Get audio error:', err);
+    return json({ error: 'Could not load audio.' }, 500);
+  }
+}
+
+// ==================== 公开分享 ====================
+async function handleShareGet(request, env, url) {
+  try {
+    const taskId = url.pathname.split('/').pop();
+    if (!taskId) return json({ error: 'Missing task id' }, 400);
+
+    const task = await env.DB.prepare(
+      'SELECT * FROM music_tasks WHERE id = ?'
+    ).bind(taskId).first();
+
+    if (!task) return json({ error: 'Not found' }, 404);
+    if (task.status !== 'completed' || !task.audio_key) {
+      return json({ error: 'This song is not ready yet' }, 404);
+    }
+
+    return json({
+      id: task.id,
+      prompt: task.prompt || '',
+      lyrics: task.lyrics || null,
+      isInstrumental: task.is_instrumental === 1,
+      duration: task.audio_duration || null,
+      audioUrl: '/music/api/share/audio/' + task.audio_key,
+      createdAt: task.created_at
+    });
+  } catch (err) {
+    console.error('Share get error:', err);
+    return json({ error: 'Could not load song.' }, 500);
+  }
+}
+
+async function handleShareAudio(request, env, url) {
+  try {
+    const key = url.pathname.split('/api/share/audio/')[1];
+    if (!key) return json({ error: 'Invalid audio key' }, 400);
+
+    // 只放行在 music_tasks 里存在、且已完成的任务
+    const task = await env.DB.prepare(
+      'SELECT * FROM music_tasks WHERE audio_key = ? AND status = ?'
+    ).bind(key, 'completed').first();
+    if (!task) return json({ error: 'Audio not found' }, 404);
+
+    const object = await env.AUDIO.get(key);
+    if (!object) return json({ error: 'Audio file not found' }, 404);
+
+    return new Response(object.body, {
+      headers: {
+        'Content-Type': 'audio/mpeg',
+        'Cache-Control': 'public, max-age=86400'
+      }
+    });
+  } catch (err) {
+    console.error('Share audio error:', err);
     return json({ error: 'Could not load audio.' }, 500);
   }
 }

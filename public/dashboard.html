@@ -278,6 +278,11 @@ function renderTasks() {
       ? '<a href="javascript:void(0)" class="task-text-link task-text-link-accent" onclick="reuseTask(\'' + task.id + '\')">' + t('taskReuse', 'Reuse') + '</a>'
       : '';
 
+    // 分享链接（只有已完成才有）
+    var shareLink = task.status === 'completed'
+      ? '<a href="javascript:void(0)" class="task-text-link task-text-link-accent" onclick="copyShareLink(\'' + task.id + '\', this)">' + t('shareBtn', 'Share') + '</a>'
+      : '';
+
     var lyricsVal = task.lyrics ? escapeHtml(task.lyrics) : '<span class="muted">' + t('detailNoLyrics', '(none)') + '</span>';
     var createdStr = task.createdAt ? new Date(task.createdAt).toLocaleString() : '—';
     var detail = '<div class="task-detail" id="detail-' + task.id + '" style="display:none;">' +
@@ -294,7 +299,7 @@ function renderTasks() {
         '<div class="task-status ' + task.status + '">' + statusLabel(task.status) + '</div>' +
       '</div>' +
       (url ? '<audio controls src="' + url + '"></audio>' : '') +
-      '<div class="task-links">' + detailLink + reuseLink + '</div>' +
+      '<div class="task-links">' + detailLink + reuseLink + shareLink + '</div>' +
       detail +
     '</div>';
   }).join('');
@@ -311,6 +316,27 @@ function toggleTaskDetail(taskId) {
   var visible = el.style.display !== 'none';
   el.style.display = visible ? 'none' : 'block';
   link.textContent = visible ? t('taskDetails', 'Details') : t('taskHide', 'Hide');
+}
+
+function copyShareLink(taskId, el) {
+  var url = window.location.origin + '/music/s/' + taskId;
+  function done(ok) {
+    if (!el) return;
+    var original = el.textContent;
+    el.textContent = ok ? t('shareCopied', 'Link copied!') : t('shareFailed', 'Copy failed');
+    setTimeout(function () { el.textContent = original; }, 1800);
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(url).then(function () { done(true); }, function () { done(false); });
+  } else {
+    // 兜底
+    var ta = document.createElement('textarea');
+    ta.value = url;
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); done(true); } catch (e) { done(false); }
+    document.body.removeChild(ta);
+  }
 }
 
 function reuseTask(taskId) {

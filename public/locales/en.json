@@ -185,5 +185,14 @@
   "entFormMessage": "What do you need?",
   "entFormSubmit": "Send inquiry",
   "entFormSuccess": "Thanks! We'll get back to you within one business day.",
-  "entFormError": "Something went wrong. Please email us directly at"
+  "entFormError": "Something went wrong. Please email us directly at",
+  "shareBtn": "Share",
+  "shareCopied": "Link copied!",
+  "shareFailed": "Copy failed",
+  "shareTitle": "A song made with AI",
+  "shareSubtitle": "Generated from a single sentence.",
+  "sharePoweredBy": "Made with AI Music Generator",
+  "shareTryIt": "Try it yourself",
+  "shareLyrics": "Lyrics",
+  "sharePrompt": "Prompt"
 }
