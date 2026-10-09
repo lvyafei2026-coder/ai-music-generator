@@ -129,5 +129,13 @@
   "featuresTitle": "Why use this",
   "featuresSubtitle": "Three things that make it different.",
   "previewPlay": "Play",
-  "previewPause": "Pause"
+  "previewPause": "Pause",
+  "btnGenLyrics": "Generate lyrics",
+  "btnOptLyrics": "Improve lyrics",
+  "lyricsTopicPrompt": "Enter a topic or theme:",
+  "lyricsGenerating": "Generating lyrics...",
+  "lyricsOptimizing": "Improving lyrics...",
+  "lyricsDone": "Done. Feel free to edit.",
+  "lyricsFailed": "Failed. Please try again.",
+  "lyricsEmpty": "Please write some lyrics first."
 }

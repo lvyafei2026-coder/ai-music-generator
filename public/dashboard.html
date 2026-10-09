@@ -50,6 +50,16 @@
     <label data-i18n="labelLyrics">Lyrics (optional — leave blank for AI-generated lyrics)</label>
     <textarea id="lyrics" rows="4" data-i18n-placeholder="lyricsPlaceholder" placeholder="Paste your own lyrics here, or leave blank..."></textarea>
 
+    <div class="lyrics-tools" id="lyricsTools">
+      <button type="button" class="lyrics-tool-btn" onclick="aiGenerateLyrics()">
+        ✨ <span data-i18n="btnGenLyrics">Generate lyrics</span>
+      </button>
+      <button type="button" class="lyrics-tool-btn" onclick="aiOptimizeLyrics()">
+        🪄 <span data-i18n="btnOptLyrics">Improve lyrics</span>
+      </button>
+      <span class="lyrics-hint" id="lyricsHint"></span>
+    </div>
+
     <label class="checkbox-label">
       <input type="checkbox" id="instrumental"> <span data-i18n="labelInstrumental">Instrumental only (no vocals)</span>
     </label>
@@ -224,6 +234,76 @@ document.addEventListener('i18n-ready', function () {
   loadUser();
   loadTasks();
 });
+
+// ==================== AI 歌词 ====================
+function setLyricsHint(msg, isError) {
+  var el = document.getElementById('lyricsHint');
+  if (!el) return;
+  el.textContent = msg || '';
+  el.className = 'lyrics-hint' + (isError ? ' lyrics-hint-error' : '');
+}
+
+function currentLang() {
+  return (window.__i18n && window.__i18n.lang) === 'zh' ? 'zh' : 'en';
+}
+
+async function aiGenerateLyrics() {
+  var topic = window.prompt(t('lyricsTopicPrompt', 'Enter a topic or theme:'));
+  if (!topic || !topic.trim()) return;
+
+  var btn = event && event.target;
+  if (btn) btn.disabled = true;
+  setLyricsHint(t('lyricsGenerating', 'Generating...'));
+
+  try {
+    var res = await fetch(API_BASE + '/api/lyrics', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mode: 'generate', topic: topic.trim(), language: currentLang() })
+    });
+    var data = await res.json();
+    if (!res.ok) {
+      setLyricsHint(data.error || t('lyricsFailed', 'Failed. Please try again.'), true);
+      return;
+    }
+    document.getElementById('lyrics').value = data.lyrics;
+    setLyricsHint(t('lyricsDone', 'Done. Feel free to edit.'));
+  } catch (e) {
+    setLyricsHint(t('errorNetwork', 'Network error.'), true);
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+async function aiOptimizeLyrics() {
+  var current = document.getElementById('lyrics').value.trim();
+  if (!current) {
+    setLyricsHint(t('lyricsEmpty', 'Please write some lyrics first.'), true);
+    return;
+  }
+  var btn = event && event.target;
+  if (btn) btn.disabled = true;
+  setLyricsHint(t('lyricsOptimizing', 'Improving...'));
+
+  try {
+    var res = await fetch(API_BASE + '/api/lyrics', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mode: 'optimize', lyrics: current, language: currentLang() })
+    });
+    var data = await res.json();
+    if (!res.ok) {
+      setLyricsHint(data.error || t('lyricsFailed', 'Failed. Please try again.'), true);
+      return;
+    }
+    document.getElementById('lyrics').value = data.lyrics;
+    setLyricsHint(t('lyricsDone', 'Done. Feel free to edit.'));
+  } catch (e) {
+    setLyricsHint(t('errorNetwork', 'Network error.'), true);
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
 
 if (new URLSearchParams(window.location.search).get('success') === 'true') {
   setTimeout(function () {

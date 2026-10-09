@@ -129,5 +129,13 @@
   "featuresTitle": "为什么选择它",
   "featuresSubtitle": "三个让它与众不同的地方。",
   "previewPlay": "播放",
-  "previewPause": "暂停"
+  "previewPause": "暂停",
+  "btnGenLyrics": "生成歌词",
+  "btnOptLyrics": "优化歌词",
+  "lyricsTopicPrompt": "输入一个主题或场景：",
+  "lyricsGenerating": "正在生成歌词……",
+  "lyricsOptimizing": "正在优化歌词……",
+  "lyricsDone": "完成，可继续修改。",
+  "lyricsFailed": "失败，请重试。",
+  "lyricsEmpty": "请先输入一些歌词。"
 }

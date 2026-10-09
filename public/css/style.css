@@ -893,3 +893,45 @@ body.home-dark .header-dark .logo-mark {
   background: #a855f7;
   transform: scale(1.25);
 }
+
+
+/* ============================================================
+   AI 歌词工具
+   ============================================================ */
+.lyrics-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin: -4px 0 14px;
+}
+.lyrics-tool-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: #fff;
+  color: var(--accent-dark);
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.lyrics-tool-btn:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: #f0fdf4;
+}
+.lyrics-tool-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.lyrics-hint {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+.lyrics-hint-error {
+  color: #dc2626;
+}

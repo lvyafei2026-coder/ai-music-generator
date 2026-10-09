@@ -2,6 +2,7 @@ import { handleSignup, handleLogin, handleLogout, handleMe, handleVerifyEmail, h
 import { handleCreateCheckout, handlePayPalWebhook } from './billing.js';
 import { createMusicTask, getMusicTask, listUserTasks, incrementUsage } from './db.js';
 import queueConsumer from './queue-consumer.js';
+import { handleLyrics } from './lyrics.js';
 
 function json(obj, status = 200) {
   return new Response(JSON.stringify(obj), {
@@ -69,6 +70,11 @@ async function handleApi(request, env, url) {
   }
   if (path.endsWith('/api/billing/webhook') && method === 'POST') {
     return handlePayPalWebhook(request, env);
+  }
+
+  // ==================== AI 歌词 ====================
+  if (path.endsWith('/api/lyrics') && method === 'POST') {
+    return handleLyrics(request, env);
   }
 
   // ==================== 音乐生成相关 ====================
