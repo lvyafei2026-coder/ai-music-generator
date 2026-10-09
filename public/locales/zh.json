@@ -92,5 +92,22 @@
   "verifyInvalid": "此链接无效或已过期。",
   "verifyMissing": "缺少验证令牌。",
   "backToSignIn": "返回登录",
-  "btnSignInShort": "去登录"
+  "btnSignInShort": "去登录",
+  "demoTitle": "听听它能创作什么",
+  "demoSubtitle": "两首由我们的 AI 真实生成的示例——未经过任何编辑，直接来自模型。",
+  "demoInstrumental": "纯音乐",
+  "demoVocal": "带人声",
+  "demoTag1": "温暖爵士钢琴",
+  "demoTag2": "中文流行情歌",
+  "demoPlay": "播放",
+  "useCasesTitle": "为创作者而生",
+  "uc1Title": "短视频配乐",
+  "uc1Body": "一分钟内为你的抖音、Reels 或 YouTube Shorts 生成独一无二的背景音乐。",
+  "uc2Title": "播客片头",
+  "uc2Body": "为你的节目定制一段契合调性的片头音乐——无需再翻免版税曲库。",
+  "uc3Title": "个人创作",
+  "uc3Body": "生日歌、婚礼礼物、游戏原型——描述它，就能得到一首完整的歌。",
+  "ctaBottomTitle": "准备好创作你的第一首歌了吗？",
+  "ctaBottomBody": "免费账户每月 3 首，无需信用卡。",
+  "ctaBottomBtn": "免费开始"
 }
