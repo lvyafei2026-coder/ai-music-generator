@@ -1,5 +1,5 @@
 (function () {
-  var API_BASE = '/music';
+  var API_BASE = '';
   var STORAGE_KEY = 'pendingPrompt';
 
   // ---------- 预览卡轮播 ----------

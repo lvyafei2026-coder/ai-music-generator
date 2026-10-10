@@ -12,9 +12,9 @@
 
 <header class="header header-dark">
   <div class="header-inner">
-    <a href="/music/" class="logo"><span class="logo-mark">T</span> toolara.dev</a>
+    <a href="https://music.toolara.dev" class="logo"><span class="logo-mark">T</span> toolara.dev</a>
     <nav class="header-nav">
-      <a href="/music/" data-i18n="navHome">Home</a>
+      <a href="https://music.toolara.dev" data-i18n="navHome">Home</a>
       <select id="langSelect" class="lang-select" onchange="setLang(this.value)" aria-label="Language">
         <option value="en">English</option>
         <option value="zh">简体中文</option>
@@ -30,7 +30,7 @@
 
   <div id="error" class="share-error" style="display:none;">
     <p id="errorMsg">This song is not available.</p>
-    <a href="/music/" class="btn-accent" data-i18n="shareTryIt">Try it yourself</a>
+    <a href="https://music.toolara.dev" class="btn-accent" data-i18n="shareTryIt">Try it yourself</a>
   </div>
 
   <div id="content" style="display:none;">
@@ -60,14 +60,14 @@
       </div>
 
       <div class="share-footer">
-        <a href="/music/" class="btn-accent" data-i18n="shareTryIt">Try it yourself</a>
+        <a href="https://music.toolara.dev" class="btn-accent" data-i18n="shareTryIt">Try it yourself</a>
       </div>
     </div>
   </div>
 </main>
 
 <footer class="footer footer-dark">
-  <p><span data-i18n="sharePoweredBy">Made with AI Music Generator</span> · <a href="/music/">toolara.dev</a></p>
+  <p><span data-i18n="sharePoweredBy">Made with AI Music Generator</span> · <a href="https://music.toolara.dev">toolara.dev</a></p>
 </footer>
 
 <script src="/js/i18n.js"></script>
@@ -75,7 +75,7 @@
 function t(k, fb) { return (window.__i18n && window.__i18n.t && window.__i18n.t[k]) || fb || k; }
 
 function init() {
-  // 从 URL /music/share/<taskId> 取 taskId
+  // 从 URL /share/<taskId> 取 taskId
   var parts = window.location.pathname.split('/').filter(Boolean);
   // 期望 ['music','share','<taskId>']
   var taskId = parts[parts.length - 1];
@@ -84,7 +84,7 @@ function init() {
     return;
   }
 
-  fetch('/music/api/share/' + encodeURIComponent(taskId))
+  fetch('/api/share/' + encodeURIComponent(taskId))
     .then(function (r) { return r.json(); })
     .then(function (data) {
       if (data.error) { showError(data.error); return; }

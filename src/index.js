@@ -261,7 +261,7 @@ async function handleGetTask(request, env, url) {
       return json({
         taskId: task.id,
         status: task.status,
-        audioUrl: `/music/api/audio/${task.audio_key}`,
+        audioUrl: `/api/audio/${task.audio_key}`,
         prompt: task.prompt
       });
     }
@@ -291,7 +291,7 @@ async function handleListTasks(request, env) {
         isInstrumental: t.is_instrumental === 1,
         duration: t.audio_duration || null,
         status: t.status,
-        audioUrl: t.audio_key && t.status === 'completed' ? `/music/api/audio/${t.audio_key}` : null,
+        audioUrl: t.audio_key && t.status === 'completed' ? `/api/audio/${t.audio_key}` : null,
         error: t.error || null,
         createdAt: t.created_at
       }))
@@ -356,7 +356,7 @@ async function handleShareGet(request, env, url) {
       lyrics: task.lyrics || null,
       isInstrumental: task.is_instrumental === 1,
       duration: task.audio_duration || null,
-      audioUrl: '/music/api/share/audio/' + task.audio_key,
+      audioUrl: '/api/share/audio/' + task.audio_key,
       createdAt: task.created_at
     });
   } catch (err) {

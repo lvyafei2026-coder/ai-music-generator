@@ -42,7 +42,7 @@
 
 <script src="js/i18n.js"></script>
 <script>
-var API_BASE = '/music';
+var API_BASE = '';
 
 function t(key, fallback) {
   return (window.__i18n && window.__i18n.t && window.__i18n.t[key]) || fallback || key;
@@ -81,7 +81,7 @@ document.addEventListener('i18n-ready', function () {
 <script>
 // if ('serviceWorker' in navigator) {
 //   window.addEventListener('load', function () {
-//     navigator.serviceWorker.register('/music/sw.js').catch(function () {});
+//     navigator.serviceWorker.register('/sw.js').catch(function () {});
 //   });
 // }
 </script>

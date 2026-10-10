@@ -1,15 +1,14 @@
 // AI Music Generator — Service Worker
 var CACHE_NAME = 'ai-music-v1';
 var PRECACHE = [
-  '/music/',
-  '/music/index.html',
-  '/music/css/style.css',
-  '/music/js/i18n.js',
-  '/music/js/home.js',
-  '/music/locales/en.json',
-  '/music/locales/zh.json',
-  '/music/icon-192.png',
-  '/music/icon-512.png'
+  '/index.html',
+  '/css/style.css',
+  '/js/i18n.js',
+  '/js/home.js',
+  '/locales/en.json',
+  '/locales/zh.json',
+  '/icon-192.png',
+  '/icon-512.png'
 ];
 
 self.addEventListener('install', function (e) {

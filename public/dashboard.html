@@ -126,7 +126,7 @@
 
 <script src="js/i18n.js"></script>
 <script>
-var API_BASE = '/music';
+var API_BASE = '';
 var currentTaskId = null;
 var pollInterval = null;
 var currentTab = 'completed';
@@ -225,7 +225,7 @@ async function loadUser() {
 
   // 邀请信息
   var inviteCode = u.invite_code || '';
-  var inviteLink = window.location.origin + '/music/login.html?ref=' + encodeURIComponent(inviteCode);
+  var inviteLink = window.location.origin + '/login.html?ref=' + encodeURIComponent(inviteCode);
   var linkEl = document.getElementById('inviteLink');
   if (linkEl) linkEl.value = inviteLink;
 
@@ -517,7 +517,7 @@ function bindWaveforms() {
 }
 
 function copyShareLink(taskId, el) {
-  var url = window.location.origin + '/music/share/' + taskId;
+  var url = window.location.origin + '/share/' + taskId;
   function done(ok) {
     if (!el) return;
     var original = el.textContent;
@@ -687,7 +687,7 @@ if (new URLSearchParams(window.location.search).get('success') === 'true') {
 <script>
 // if ('serviceWorker' in navigator) {
 //   window.addEventListener('load', function () {
-//     navigator.serviceWorker.register('/music/sw.js').catch(function () {});
+//     navigator.serviceWorker.register('/sw.js').catch(function () {});
 //   });
 // }
 </script>
