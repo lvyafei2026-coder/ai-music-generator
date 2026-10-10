@@ -95,19 +95,6 @@ export async function findUserByInviteCode(env, code) {
   ).bind(code).first();
 }
 
-export async function createInvite(env, { id, inviterId, inviteeId }) {
-  await env.DB.prepare(
-    `INSERT INTO invites (id, inviter_id, invitee_id, bonus_given, created_at)
-     VALUES (?, ?, ?, 1, ?)`
-  ).bind(id, inviterId, inviteeId, Date.now()).run();
-}
-
-export async function addBonusGenerations(env, userId, amount) {
-  await env.DB.prepare(
-    'UPDATE users SET bonus_generations = bonus_generations + ?, updated_at = ? WHERE id = ?'
-  ).bind(amount, Date.now(), userId).run();
-}
-
 export async function getInviteStats(env, userId) {
   const countRow = await env.DB.prepare(
     'SELECT COUNT(*) as c FROM invites WHERE inviter_id = ?'
@@ -119,4 +106,73 @@ export async function getInviteStats(env, userId) {
     count: (countRow && countRow.c) || 0,
     bonus: (bonusRow && bonusRow.b) || 0
   };
+}
+
+// ==================== 邀请返利 v2 ====================
+
+// 注册时：检查邀请人是否还能拿返利，插一条 pending 记录
+export async function createPendingInvite(env, { id, inviterId, inviteeId }) {
+  await env.DB.prepare(
+    `INSERT INTO invites (id, inviter_id, invitee_id, bonus_given, reward_status, created_at)
+     VALUES (?, ?, ?, 0, 'pending', ?)`
+  ).bind(id, inviterId, inviteeId, Date.now()).run();
+}
+
+// 检查邀请人是否还有返利名额
+export async function canInviterEarnMore(env, inviterId) {
+  const row = await env.DB.prepare(
+    'SELECT invite_reward_count FROM users WHERE id = ?'
+  ).bind(inviterId).first();
+  const used = (row && row.invite_reward_count) || 0;
+  return used < 5;
+}
+
+// 生成成功后：查找这个用户是否有 pending 邀请记录，有就发放
+export async function grantInviteRewardIfPending(env, inviteeId) {
+  // 找 pending 记录
+  const invite = await env.DB.prepare(
+    `SELECT * FROM invites WHERE invitee_id = ? AND reward_status = 'pending' LIMIT 1`
+  ).bind(inviteeId).first();
+
+  if (!invite) return { granted: false };
+
+  // 再次确认邀请人还有名额（防止并发时超额）
+  const inviter = await env.DB.prepare(
+    'SELECT invite_reward_count FROM users WHERE id = ?'
+  ).bind(invite.inviter_id).first();
+
+  if (!inviter) {
+    // 邀请人不存在（被删了？），标记为 granted 但不发
+    await env.DB.prepare(
+      `UPDATE invites SET reward_status = 'granted', bonus_given = 0 WHERE id = ?`
+    ).bind(invite.id).run();
+    return { granted: false };
+  }
+
+  if ((inviter.invite_reward_count || 0) >= 5) {
+    // 邀请人名额已满，标记为 granted 但不发
+    await env.DB.prepare(
+      `UPDATE invites SET reward_status = 'granted', bonus_given = 0 WHERE id = ?`
+    ).bind(invite.id).run();
+    return { granted: false, reason: 'inviter_limit_reached' };
+  }
+
+  // 发放
+  const now = Date.now();
+  await env.DB.batch([
+    env.DB.prepare(
+      `UPDATE users SET bonus_generations = bonus_generations + 2, updated_at = ? WHERE id = ?`
+    ).bind(now, invite.inviter_id),
+    env.DB.prepare(
+      `UPDATE users SET bonus_generations = bonus_generations + 2, updated_at = ? WHERE id = ?`
+    ).bind(now, inviteeId),
+    env.DB.prepare(
+      `UPDATE users SET invite_reward_count = invite_reward_count + 1, updated_at = ? WHERE id = ?`
+    ).bind(now, invite.inviter_id),
+    env.DB.prepare(
+      `UPDATE invites SET reward_status = 'granted', bonus_given = 1 WHERE id = ?`
+    ).bind(invite.id)
+  ]);
+
+  return { granted: true, inviterId: invite.inviter_id };
 }

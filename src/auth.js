@@ -1,4 +1,4 @@
-import { findUserByEmail, findUserById, createUser, createSession, findSession, deleteSession, findUserByInviteCode, createInvite, addBonusGenerations } from './db.js';
+import { findUserByEmail, findUserById, createUser, createSession, findSession, deleteSession, findUserByInviteCode, createPendingInvite, canInviterEarnMore } from './db.js';
 
 const SESSION_COOKIE = 'session_id';
 const SESSION_TTL = 30 * 24 * 60 * 60 * 1000; // 30 天
@@ -102,20 +102,22 @@ export async function handleSignup(request, env) {
     // 发送验证邮件
     await sendVerificationEmail(env, email, token);
 
-    // 处理邀请返利（仅当 refCode 有效）
+    // 处理邀请：只记 pending，不发额度
     if (refCode) {
       try {
         const inviter = await findUserByInviteCode(env, refCode);
         if (inviter && inviter.id !== userId) {
-          await createInvite(env, {
-            id: generateId('inv'),
-            inviterId: inviter.id,
-            inviteeId: userId
-          });
-          // 双方各 +2
-          await addBonusGenerations(env, inviter.id, 2);
-          await addBonusGenerations(env, userId, 2);
-          console.log('[Signup] Invite bonus applied:', inviter.id, '<-', userId);
+          const canEarn = await canInviterEarnMore(env, inviter.id);
+          if (canEarn) {
+            await createPendingInvite(env, {
+              id: generateId('inv'),
+              inviterId: inviter.id,
+              inviteeId: userId
+            });
+            console.log('[Signup] Pending invite created:', inviter.id, '<-', userId);
+          } else {
+            console.log('[Signup] Inviter reached reward limit, skip:', inviter.id);
+          }
         }
       } catch (e) {
         console.error('[Signup] Invite processing failed:', e.message);

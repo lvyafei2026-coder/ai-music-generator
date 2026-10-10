@@ -1,4 +1,4 @@
-import { decrementUsage } from './db.js';
+import { decrementUsage, grantInviteRewardIfPending } from './db.js';
 
 export default {
   async queue(batch, env, ctx) {
@@ -164,6 +164,16 @@ export default {
         ).bind(key, Date.now(), taskId).run();
         console.log('[Queue] Task completed: ' + taskId);
 
+        // 邀请返利：被邀请人首次成功生成后发放
+        try {
+          const result = await grantInviteRewardIfPending(env, userId);
+          if (result.granted) {
+            console.log('[Queue] Invite reward granted:', result.inviterId, '<-', userId);
+          }
+        } catch (e) {
+          console.error('[Queue] Invite reward failed:', e.message);
+        }
+
         message.ack();
         console.log('[Queue] Message acknowledged');
       } catch (err) {
@@ -182,6 +192,14 @@ export default {
           console.log('[Queue] Failure written to D1');
         } catch (dbErr) {
           console.error('[Queue] Failed to write failure to D1: ' + (dbErr.message || String(dbErr)));
+        }
+
+        // 失败不占用额度：把提交时 +1 的用量减回去
+        try {
+          await decrementUsage(env, userId);
+          console.log('[Queue] Usage decremented for failed task');
+        } catch (decErr) {
+          console.error('[Queue] Failed to decrement usage: ' + (decErr.message || String(decErr)));
         }
 
         message.ack();
