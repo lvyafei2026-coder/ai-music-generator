@@ -1860,3 +1860,66 @@ body.page-dark,
 body.home-dark {
   color-scheme: dark;
 }
+
+/* ============================================================
+   深色主题下的滚动条
+   ============================================================ */
+body.page-dark,
+body.home-dark {
+  color-scheme: dark;
+}
+
+/* Webkit 浏览器（Chrome / Edge / Safari） */
+body.page-dark ::-webkit-scrollbar,
+body.home-dark ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+body.page-dark ::-webkit-scrollbar-track,
+body.home-dark ::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+}
+
+body.page-dark ::-webkit-scrollbar-thumb,
+body.home-dark ::-webkit-scrollbar-thumb {
+  background: rgba(168, 85, 247, 0.35);
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  transition: background 0.15s;
+}
+
+body.page-dark ::-webkit-scrollbar-thumb:hover,
+body.home-dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(168, 85, 247, 0.6);
+  background-clip: padding-box;
+}
+
+body.page-dark ::-webkit-scrollbar-corner,
+body.home-dark ::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Firefox 专用 */
+body.page-dark,
+body.home-dark {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(168, 85, 247, 0.4) rgba(255, 255, 255, 0.03);
+}
+
+/* 歌曲列表内滚动区域的滚动条更细一点 */
+body.page-dark .task-list::-webkit-scrollbar,
+body.page-dark .songs-card::-webkit-scrollbar {
+  width: 8px;
+}
+body.page-dark .task-list::-webkit-scrollbar-thumb,
+body.page-dark .songs-card::-webkit-scrollbar-thumb {
+  background: rgba(168, 85, 247, 0.3);
+  border-radius: 6px;
+}
+body.page-dark .task-list::-webkit-scrollbar-thumb:hover,
+body.page-dark .songs-card::-webkit-scrollbar-thumb:hover {
+  background: rgba(168, 85, 247, 0.55);
+}
