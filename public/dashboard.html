@@ -37,6 +37,7 @@
         <span id="userEmailTop" class="user-email-top">—</span>
         <span class="usage-divider">·</span>
         <span id="proStatus" class="pro-status-inline" style="display:none;" data-i18n="proActive">✓ Pro subscription active</span>
+        <a href="#" id="manageSubscriptionLink" class="manage-sub-link" style="display:none;" onclick="openManageSubscription(); return false;" data-i18n="manageSubscription">Manage subscription</a>
         <p id="cancelNote" class="cancel-note" style="display:none;"></p>
         <span id="planBadge" class="plan-badge free" data-i18n="planFree">Free</span>
         <a href="pricing.html" class="btn-primary small" id="upgradeBtn" data-i18n="upgradeBtn">Upgrade to Pro</a>
@@ -185,6 +186,13 @@ async function loadUser() {
 
   var proStatus = document.getElementById('proStatus');
   if (proStatus) proStatus.style.display = isPro ? 'block' : 'none';
+
+  // 管理订阅链接：只有付费用户（Pro 或 Lite）才显示
+  var manageLink = document.getElementById('manageSubscriptionLink');
+  if (manageLink) {
+    manageLink.style.display = (isPro || isLite) ? 'inline' : 'none';
+  }
+
   // 取消订阅提示
   var cancelNote = document.getElementById('cancelNote');
   if (cancelNote) {
@@ -568,6 +576,15 @@ function escapeHtml(s) {
 async function doLogout() {
   await fetch(API_BASE + '/api/auth/logout', { method: 'POST' });
   window.location.href = './';
+}
+
+function openManageSubscription() {
+  // 跳 PayPal 自动付款管理页（沙箱/正式环境不同）
+  var isSandbox = true; // 上线后改成 false；沙箱测试时改成 true
+  var url = isSandbox
+    ? 'https://www.sandbox.paypal.com/myaccount/autopay/'
+    : 'https://www.paypal.com/myaccount/autopay/';
+  window.open(url, '_blank');
 }
 
 // ---------- AI 歌词 ----------

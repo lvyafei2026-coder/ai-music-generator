@@ -205,5 +205,6 @@
   "inviteNone": "还没有好友加入——分享你的链接吧！",
   "planLite": "Lite",
   "featLite1": "每月 10 首歌曲生成",
-  "cancelNote": "订阅已取消。Pro 权限将于 {date} 到期。"
+  "cancelNote": "订阅已取消。Pro 权限将于 {date} 到期。",
+  "manageSubscription": "管理订阅"
 }

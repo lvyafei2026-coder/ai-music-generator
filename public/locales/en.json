@@ -205,5 +205,6 @@
   "inviteNone": "No friends yet — share your link!",
   "planLite": "Lite",
   "featLite1": "10 song generations per month",
-  "cancelNote": "Subscription canceled. Pro access ends on {date}."
+  "cancelNote": "Subscription canceled. Pro access ends on {date}.",
+  "manageSubscription": "Manage subscription"
 }

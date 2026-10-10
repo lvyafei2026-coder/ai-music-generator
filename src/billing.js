@@ -9,6 +9,29 @@ function json(obj, status = 200) {
   });
 }
 
+async function sendOwnerNotification(env, subject, htmlBody) {
+  try {
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${env.RESEND_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: 'AI Music Generator <noreply@toolara.dev>',
+        to: ['lvyafei2026@gmail.com'],
+        subject: subject,
+        html: htmlBody
+      })
+    });
+    if (!res.ok) {
+      console.error('Owner notification failed:', await res.text());
+    }
+  } catch (err) {
+    console.error('Owner notification error:', err.message);
+  }
+}
+
 async function getPayPalAccessToken(env) {
   const auth = btoa(`${env.PAYPAL_CLIENT_ID}:${env.PAYPAL_CLIENT_SECRET}`);
   const res = await fetch(`${PAYPAL_API}/v1/oauth2/token`, {
@@ -176,6 +199,16 @@ export async function handlePayPalWebhook(request, env) {
           stripeSubscriptionId: subscriptionId
         });
         console.log(`User ${userId} upgraded to ${cfg.planName} (${planType}) via ${event.event_type}`);
+
+        await sendOwnerNotification(env,
+          '🎉 New subscription: ' + cfg.planName + ' (' + planType + ')',
+          '<h2>New subscription</h2>' +
+          '<p><strong>User ID:</strong> ' + userId + '</p>' +
+          '<p><strong>Plan:</strong> ' + cfg.planName + ' / ' + planType + '</p>' +
+          '<p><strong>Limit:</strong> ' + cfg.limit + ' songs/month</p>' +
+          '<p><strong>Subscription ID:</strong> ' + subscriptionId + '</p>' +
+          '<p><strong>Event:</strong> ' + event.event_type + '</p>'
+        );
       } else {
         console.error('No user_id found in webhook event');
       }
@@ -227,6 +260,14 @@ export async function handlePayPalWebhook(request, env) {
           `UPDATE users SET cancel_at_period_end = 1, current_period_end = ?, updated_at = ? WHERE id = ?`
         ).bind(periodEnd, Date.now(), userId).run();
         console.log(`User ${userId} marked cancel_at_period_end, period ends at ${new Date(periodEnd).toISOString()}`);
+
+        await sendOwnerNotification(env,
+          '⚠️ Subscription canceled: ' + userId,
+          '<h2>Subscription canceled</h2>' +
+          '<p><strong>User ID:</strong> ' + userId + '</p>' +
+          '<p><strong>Access ends at:</strong> ' + new Date(periodEnd).toISOString() + '</p>' +
+          '<p><strong>Event:</strong> ' + event.event_type + '</p>'
+        );
       }
     }
 

@@ -2019,3 +2019,18 @@ body.page-dark .songs-card::-webkit-scrollbar-thumb:hover {
   border-radius: 8px;
   font-weight: 500;
 }
+/* ============================================================
+   管理订阅链接
+   ============================================================ */
+.manage-sub-link {
+  font-size: 0.8rem;
+  color: #c9b5ff;
+  text-decoration: none;
+  font-weight: 600;
+  margin-left: 10px;
+  transition: color 0.15s;
+}
+.manage-sub-link:hover {
+  color: #a855f7;
+  text-decoration: underline;
+}
