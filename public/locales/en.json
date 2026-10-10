@@ -194,5 +194,12 @@
   "sharePoweredBy": "Made with AI Music Generator",
   "shareTryIt": "Try it yourself",
   "shareLyrics": "Lyrics",
-  "sharePrompt": "Prompt"
+  "sharePrompt": "Prompt",
+  "inviteTitle": "Invite friends, both get 2 free songs",
+  "inviteSubtitle": "Share your link. When a friend signs up, you each get 2 extra generations.",
+  "inviteLinkLabel": "Your invite link",
+  "inviteCopy": "Copy link",
+  "inviteCopied": "Copied!",
+  "inviteStats": "{count} friend(s) joined · {bonus} bonus songs earned",
+  "inviteNone": "No friends yet — share your link!"
 }

@@ -46,6 +46,21 @@
     </div>
   </div>
 
+  <!-- ========== 邀请返利 ========== -->
+  <div class="card invite-card" id="inviteCard">
+    <div class="invite-header">
+      <div>
+        <h3 data-i18n="inviteTitle">Invite friends, both get 2 free songs</h3>
+        <p data-i18n="inviteSubtitle">Share your link. When a friend signs up, you each get 2 extra generations.</p>
+      </div>
+    </div>
+    <div class="invite-link-row">
+      <input type="text" id="inviteLink" readonly value="">
+      <button class="invite-copy-btn" onclick="copyInviteLink(this)" data-i18n="inviteCopy">Copy link</button>
+    </div>
+    <p class="invite-stats" id="inviteStats"></p>
+  </div>
+
   <!-- ========== 左右布局 ========== -->
   <div class="dash-grid">
 
@@ -147,10 +162,51 @@ async function loadUser() {
   if (proStatus) proStatus.style.display = isPro ? 'block' : 'none';
   if (isPro) document.getElementById('upgradeBtn').style.display = 'none';
 
-  if (remaining <= 0) {
+  var bonus = u.bonus_generations || 0;
+  var totalLimit = (u.generations_limit || 0) + bonus;
+  var remainingWithBonus = Math.max(0, totalLimit - used);
+  document.getElementById('remainingCount').textContent = remainingWithBonus;
+  document.getElementById('usageFraction').textContent = used + ' / ' + totalLimit;
+
+  if (remainingWithBonus <= 0) {
     var btn = document.getElementById('generateBtn');
     btn.disabled = true;
     btn.textContent = t('limitReached', 'Limit reached — Upgrade to Pro');
+  }
+
+  // 邀请信息
+  var inviteCode = u.invite_code || '';
+  var inviteLink = window.location.origin + '/music/login.html?ref=' + encodeURIComponent(inviteCode);
+  var linkEl = document.getElementById('inviteLink');
+  if (linkEl) linkEl.value = inviteLink;
+
+  var statsEl = document.getElementById('inviteStats');
+  if (statsEl) {
+    var count = u.invite_count || 0;
+    if (count > 0) {
+      statsEl.textContent = t('inviteStats', '{count} friend(s) joined · {bonus} bonus songs earned')
+        .replace('{count}', count)
+        .replace('{bonus}', bonus);
+    } else {
+      statsEl.textContent = t('inviteNone', 'No friends yet — share your link!');
+    }
+  }
+}
+
+function copyInviteLink(el) {
+  var input = document.getElementById('inviteLink');
+  if (!input) return;
+  input.select();
+  input.setSelectionRange(0, 99999);
+  function done(ok) {
+    var orig = el.textContent;
+    el.textContent = ok ? t('inviteCopied', 'Copied!') : t('shareFailed', 'Copy failed');
+    setTimeout(function () { el.textContent = orig; }, 1800);
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(input.value).then(function () { done(true); }, function () { done(false); });
+  } else {
+    try { document.execCommand('copy'); done(true); } catch (e) { done(false); }
   }
 }
 

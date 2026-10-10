@@ -50,6 +50,8 @@
 
 <script src="js/i18n.js"></script>
 <script>
+var refFromUrl = (new URLSearchParams(window.location.search)).get('ref') || '';
+
 function t(key, fallback) {
   return (window.__i18n && window.__i18n.t && window.__i18n.t[key]) || fallback || key;
 }

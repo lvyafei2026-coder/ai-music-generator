@@ -87,3 +87,36 @@ export async function listUserTasks(env, userId, limit = 20) {
   ).bind(userId, limit).all();
   return results || [];
 }
+
+// ==================== 邀请返利 ====================
+export async function findUserByInviteCode(env, code) {
+  return env.DB.prepare(
+    'SELECT * FROM users WHERE invite_code = ?'
+  ).bind(code).first();
+}
+
+export async function createInvite(env, { id, inviterId, inviteeId }) {
+  await env.DB.prepare(
+    `INSERT INTO invites (id, inviter_id, invitee_id, bonus_given, created_at)
+     VALUES (?, ?, ?, 1, ?)`
+  ).bind(id, inviterId, inviteeId, Date.now()).run();
+}
+
+export async function addBonusGenerations(env, userId, amount) {
+  await env.DB.prepare(
+    'UPDATE users SET bonus_generations = bonus_generations + ?, updated_at = ? WHERE id = ?'
+  ).bind(amount, Date.now(), userId).run();
+}
+
+export async function getInviteStats(env, userId) {
+  const countRow = await env.DB.prepare(
+    'SELECT COUNT(*) as c FROM invites WHERE inviter_id = ?'
+  ).bind(userId).first();
+  const bonusRow = await env.DB.prepare(
+    'SELECT COALESCE(bonus_generations, 0) as b FROM users WHERE id = ?'
+  ).bind(userId).first();
+  return {
+    count: (countRow && countRow.c) || 0,
+    bonus: (bonusRow && bonusRow.b) || 0
+  };
+}

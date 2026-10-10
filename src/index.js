@@ -1,6 +1,6 @@
 import { handleSignup, handleLogin, handleLogout, handleMe, handleVerifyEmail, handleResendVerification, getCurrentUser } from './auth.js';
 import { handleCreateCheckout, handlePayPalWebhook } from './billing.js';
-import { createMusicTask, getMusicTask, listUserTasks, incrementUsage } from './db.js';
+import { createMusicTask, getMusicTask, listUserTasks, incrementUsage, getInviteStats } from './db.js';
 import queueConsumer from './queue-consumer.js';
 import { handleLyrics } from './lyrics.js';
 

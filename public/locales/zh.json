@@ -194,5 +194,12 @@
   "sharePoweredBy": "由 AI 音乐生成器制作",
   "shareTryIt": "我也要试",
   "shareLyrics": "歌词",
-  "sharePrompt": "描述"
+  "sharePrompt": "描述",
+  "inviteTitle": "邀请好友，双方各得 2 首",
+  "inviteSubtitle": "分享你的链接。好友注册后，你们各得 2 首额外生成额度。",
+  "inviteLinkLabel": "你的邀请链接",
+  "inviteCopy": "复制链接",
+  "inviteCopied": "已复制！",
+  "inviteStats": "已邀请 {count} 人 · 获得 {bonus} 首额外额度",
+  "inviteNone": "还没有好友加入——分享你的链接吧！"
 }

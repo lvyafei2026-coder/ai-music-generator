@@ -1,4 +1,4 @@
-import { findUserByEmail, findUserById, createUser, createSession, findSession, deleteSession } from './db.js';
+import { findUserByEmail, findUserById, createUser, createSession, findSession, deleteSession, findUserByInviteCode, createInvite, addBonusGenerations } from './db.js';
 
 const SESSION_COOKIE = 'session_id';
 const SESSION_TTL = 30 * 24 * 60 * 60 * 1000; // 30 天
@@ -101,6 +101,26 @@ export async function handleSignup(request, env) {
 
     // 发送验证邮件
     await sendVerificationEmail(env, email, token);
+
+    // 处理邀请返利（仅当 refCode 有效）
+    if (refCode) {
+      try {
+        const inviter = await findUserByInviteCode(env, refCode);
+        if (inviter && inviter.id !== userId) {
+          await createInvite(env, {
+            id: generateId('inv'),
+            inviterId: inviter.id,
+            inviteeId: userId
+          });
+          // 双方各 +2
+          await addBonusGenerations(env, inviter.id, 2);
+          await addBonusGenerations(env, userId, 2);
+          console.log('[Signup] Invite bonus applied:', inviter.id, '<-', userId);
+        }
+      } catch (e) {
+        console.error('[Signup] Invite processing failed:', e.message);
+      }
+    }
 
     // 不直接登录，返回提示信息
     return json({
