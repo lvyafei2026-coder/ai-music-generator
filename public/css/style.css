@@ -1994,3 +1994,17 @@ body.page-dark .songs-card::-webkit-scrollbar-thumb:hover {
 .pricing-grid-6 .price span {
   white-space: nowrap;
 }
+
+/* ============================================================
+   取消订阅提示
+   ============================================================ */
+.cancel-note {
+  margin: 10px 0 0;
+  padding: 10px 14px;
+  font-size: 0.85rem;
+  color: #fbbf24;
+  background: rgba(251,191,36,0.08);
+  border: 1px solid rgba(251,191,36,0.25);
+  border-radius: 8px;
+  font-weight: 500;
+}

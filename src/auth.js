@@ -1,4 +1,4 @@
-import { findUserByEmail, findUserById, createUser, createSession, findSession, deleteSession, findUserByInviteCode, createPendingInvite, canInviterEarnMore } from './db.js';
+import { findUserByEmail, findUserById, createUser, createSession, findSession, deleteSession, findUserByInviteCode, createPendingInvite, canInviterEarnMore, checkAndExpireSubscription } from './db.js';
 
 const SESSION_COOKIE = 'session_id';
 const SESSION_TTL = 30 * 24 * 60 * 60 * 1000; // 30 天
@@ -257,9 +257,15 @@ export async function getCurrentUser(request, env) {
 }
 
 export async function handleMe(request, env) {
-  const user = await getCurrentUser(request, env);
+  let user = await getCurrentUser(request, env);
   if (!user) {
     return json({ error: 'Not authenticated' }, 401);
+  }
+
+  // 懒降级
+  user = await checkAndExpireSubscription(env, user.id);
+  if (!user) {
+    return json({ error: 'User not found' }, 401);
   }
 
   // 邀请统计
@@ -286,7 +292,9 @@ export async function handleMe(request, env) {
       bonus_generations: bonus,
       total_limit: baseLimit + bonus,
       invite_code: user.invite_code || user.id.slice(-8),
-      invite_count: inviteCount
+      invite_count: inviteCount,
+      cancel_at_period_end: user.cancel_at_period_end === 1,
+      current_period_end: user.current_period_end || null
     }
   });
 }

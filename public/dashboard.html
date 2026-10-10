@@ -37,6 +37,7 @@
         <span id="userEmailTop" class="user-email-top">—</span>
         <span class="usage-divider">·</span>
         <span id="proStatus" class="pro-status-inline" style="display:none;" data-i18n="proActive">✓ Pro subscription active</span>
+        <p id="cancelNote" class="cancel-note" style="display:none;"></p>
         <span id="planBadge" class="plan-badge free" data-i18n="planFree">Free</span>
         <a href="pricing.html" class="btn-primary small" id="upgradeBtn" data-i18n="upgradeBtn">Upgrade to Pro</a>
       </div>
@@ -184,6 +185,22 @@ async function loadUser() {
 
   var proStatus = document.getElementById('proStatus');
   if (proStatus) proStatus.style.display = isPro ? 'block' : 'none';
+  // 取消订阅提示
+  var cancelNote = document.getElementById('cancelNote');
+  if (cancelNote) {
+    if ((isPro || isLite) && u.cancel_at_period_end && u.current_period_end) {
+      var endDate = new Date(u.current_period_end);
+      var endStr = endDate.toLocaleDateString(
+        currentLang() === 'zh' ? 'zh-CN' : 'en-US',
+        { year: 'numeric', month: 'long', day: 'numeric' }
+      );
+      cancelNote.textContent = t('cancelNote', 'Subscription canceled. Pro access ends on {date}.')
+        .replace('{date}', endStr);
+      cancelNote.style.display = 'block';
+    } else {
+      cancelNote.style.display = 'none';
+    }
+  }
   if (isPro) document.getElementById('upgradeBtn').style.display = 'none';
 
   var bonus = u.bonus_generations || 0;

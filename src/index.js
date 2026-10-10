@@ -1,6 +1,6 @@
 import { handleSignup, handleLogin, handleLogout, handleMe, handleVerifyEmail, handleResendVerification, getCurrentUser } from './auth.js';
 import { handleCreateCheckout, handlePayPalWebhook } from './billing.js';
-import { createMusicTask, getMusicTask, listUserTasks, incrementUsage, getInviteStats } from './db.js';
+import { createMusicTask, getMusicTask, listUserTasks, incrementUsage, checkAndExpireSubscription } from './db.js';
 import queueConsumer from './queue-consumer.js';
 import { handleLyrics } from './lyrics.js';
 
@@ -45,6 +45,46 @@ export default {
 
   async queue(batch, env, ctx) {
     return queueConsumer.queue(batch, env, ctx);
+  },
+
+  async scheduled(event, env, ctx) {
+    console.log('[Cron] Expiring canceled subscriptions');
+    try {
+      const now = Date.now();
+      // 找出所有已取消且已过期的用户
+      const { results } = await env.DB.prepare(
+        `SELECT id FROM users
+         WHERE cancel_at_period_end = 1
+           AND current_period_end IS NOT NULL
+           AND current_period_end < ?`
+      ).bind(now).all();
+
+      if (!results || results.length === 0) {
+        console.log('[Cron] No expired subscriptions');
+        return;
+      }
+
+      console.log('[Cron] Downgrading ' + results.length + ' users');
+
+      // 批量降级
+      const stmts = results.map(row =>
+        env.DB.prepare(
+          `UPDATE users SET plan = 'free', generations_limit = 3,
+           cancel_at_period_end = 0, current_period_end = NULL,
+           stripe_subscription_id = NULL, updated_at = ?
+           WHERE id = ?`
+        ).bind(now, row.id)
+      );
+
+      // D1 的 batch 一次最多 100 条，分块处理
+      for (let i = 0; i < stmts.length; i += 100) {
+        await env.DB.batch(stmts.slice(i, i + 100));
+      }
+
+      console.log('[Cron] Done. ' + results.length + ' users downgraded');
+    } catch (err) {
+      console.error('[Cron] Failed:', err.message);
+    }
   }
 };
 
@@ -114,10 +154,16 @@ async function handleApi(request, env, url) {
 async function handleGenerate(request, env) {
   console.log('[Generate] Request received');
   try {
-    const user = await getCurrentUser(request, env);
+    let user = await getCurrentUser(request, env);
     if (!user) {
       console.log('[Generate] Not authenticated');
       return json({ error: 'Please sign in first.' }, 401);
+    }
+
+    // 懒降级：如果订阅已取消且过期，先降级
+    user = await checkAndExpireSubscription(env, user.id);
+    if (!user) {
+      return json({ error: 'User not found.' }, 401);
     }
     console.log('[Generate] User authenticated:', user.id);
 

@@ -204,5 +204,6 @@
   "inviteStats": "{count} friend(s) joined · {bonus} bonus songs earned",
   "inviteNone": "No friends yet — share your link!",
   "planLite": "Lite",
-  "featLite1": "10 song generations per month"
+  "featLite1": "10 song generations per month",
+  "cancelNote": "Subscription canceled. Pro access ends on {date}."
 }

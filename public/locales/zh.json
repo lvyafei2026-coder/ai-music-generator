@@ -204,5 +204,6 @@
   "inviteStats": "已邀请 {count} 人 · 获得 {bonus} 首额外额度",
   "inviteNone": "还没有好友加入——分享你的链接吧！",
   "planLite": "Lite",
-  "featLite1": "每月 10 首歌曲生成"
+  "featLite1": "每月 10 首歌曲生成",
+  "cancelNote": "订阅已取消。Pro 权限将于 {date} 到期。"
 }

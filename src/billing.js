@@ -182,13 +182,59 @@ export async function handlePayPalWebhook(request, env) {
     }
 
     // ---------- 取消 / 到期 / 暂停 ----------
+        // ---------- 取消订阅：只标记，不立即降级（缓冲期到 period_end） ----------
     if (event.event_type === 'BILLING.SUBSCRIPTION.CANCELLED' ||
-        event.event_type === 'BILLING.SUBSCRIPTION.EXPIRED' ||
         event.event_type === 'BILLING.SUBSCRIPTION.SUSPENDED') {
       const subscription = event.resource;
       let customId = subscription.custom_id;
+      let subId = subscription.id;
 
-      // 有些事件里 custom_id 不在 resource 上，用订阅 ID 反查
+      // 反查 custom_id
+      if (!customId && subId) {
+        try {
+          const token = await getPayPalAccessToken(env);
+          const subRes = await fetch(
+            `${PAYPAL_API}/v1/billing/subscriptions/${subId}`,
+            { headers: { 'Authorization': `Bearer ${token}` } }
+          );
+          const subData = await subRes.json();
+          customId = subData.custom_id;
+        } catch (err) {
+          console.error('Failed to fetch subscription for cancel:', err);
+        }
+      }
+
+      // 拿周期结束时间（next_billing_time）
+      let periodEnd = Date.now() + 30 * 24 * 60 * 60 * 1000; // 默认兜底 30 天
+      if (subId) {
+        try {
+          const token = await getPayPalAccessToken(env);
+          const subRes = await fetch(
+            `${PAYPAL_API}/v1/billing/subscriptions/${subId}`,
+            { headers: { 'Authorization': `Bearer ${token}` } }
+          );
+          const subData = await subRes.json();
+          const nextTime = subData?.billing_info?.next_billing_time;
+          if (nextTime) periodEnd = new Date(nextTime).getTime();
+        } catch (err) {
+          console.error('Failed to fetch next_billing_time:', err);
+        }
+      }
+
+      if (customId) {
+        const userId = String(customId).split('|')[0];
+        await env.DB.prepare(
+          `UPDATE users SET cancel_at_period_end = 1, current_period_end = ?, updated_at = ? WHERE id = ?`
+        ).bind(periodEnd, Date.now(), userId).run();
+        console.log(`User ${userId} marked cancel_at_period_end, period ends at ${new Date(periodEnd).toISOString()}`);
+      }
+    }
+
+    // ---------- 订阅彻底过期：立即降级 ----------
+    if (event.event_type === 'BILLING.SUBSCRIPTION.EXPIRED') {
+      const subscription = event.resource;
+      let customId = subscription.custom_id;
+
       if (!customId && subscription.id) {
         try {
           const token = await getPayPalAccessToken(env);
@@ -199,7 +245,7 @@ export async function handlePayPalWebhook(request, env) {
           const subData = await subRes.json();
           customId = subData.custom_id;
         } catch (err) {
-          console.error('Failed to fetch subscription for cancel:', err);
+          console.error('Failed to fetch subscription for expire:', err);
         }
       }
 
@@ -211,7 +257,7 @@ export async function handlePayPalWebhook(request, env) {
           stripeCustomerId: null,
           stripeSubscriptionId: null
         });
-        console.log(`User ${userId} downgraded to Free`);
+        console.log(`User ${userId} downgraded to Free (subscription expired)`);
       }
     }
 

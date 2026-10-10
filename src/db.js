@@ -176,3 +176,25 @@ export async function grantInviteRewardIfPending(env, inviteeId) {
 
   return { granted: true, inviterId: invite.inviter_id };
 }
+
+// ==================== 取消缓冲期 ====================
+export async function checkAndExpireSubscription(env, userId) {
+  const user = await env.DB.prepare(
+    'SELECT * FROM users WHERE id = ?'
+  ).bind(userId).first();
+  if (!user) return null;
+
+  // 已取消且已过期
+  if (user.cancel_at_period_end === 1 &&
+      user.current_period_end &&
+      Date.now() > user.current_period_end) {
+    await env.DB.prepare(
+      `UPDATE users SET plan = 'free', generations_limit = 3,
+       cancel_at_period_end = 0, current_period_end = NULL,
+       stripe_subscription_id = NULL, updated_at = ? WHERE id = ?`
+    ).bind(Date.now(), userId).run();
+    return env.DB.prepare('SELECT * FROM users WHERE id = ?').bind(userId).first();
+  }
+
+  return user;
+}
