@@ -1965,3 +1965,46 @@ body.page-dark .songs-card::-webkit-scrollbar-thumb:hover {
   background: rgba(59,130,246,0.18);
   color: #93c5fd;
 }
+
+/* ============================================================
+   6 卡片定价布局优化：加宽间距 + 统一 price-note 位置
+   ============================================================ */
+.pricing-grid-6 {
+  gap: 24px;  /* 原来 14px，改成 24px */
+  margin-top: 8px;
+}
+
+/* 每张卡片内部：让 price-note 紧贴价格下方，再留一点空间给 features */
+.pricing-grid-6 .pricing-card {
+  padding: 24px 18px;
+  display: flex;
+  flex-direction: column;
+}
+.pricing-grid-6 .pricing-card h2 {
+  margin-bottom: 8px;
+}
+.pricing-grid-6 .price {
+  margin-bottom: 6px;
+}
+.pricing-grid-6 .price-note {
+  margin: 0 0 14px 0;  /* 紧贴价格下方，下面留 14px 给 features */
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #4ade80;
+  min-height: 1.1em;   /* 没折价文案时也占位，保证所有卡片价格垂直对齐 */
+}
+.pricing-grid-6 .features {
+  margin: 0 0 18px 0;
+}
+.pricing-grid-6 .pricing-card .btn-secondary,
+.pricing-grid-6 .pricing-card .btn-primary {
+  margin-top: auto;    /* 按钮固定在卡片底部，所有卡片按钮对齐 */
+}
+
+/* 小屏下间距也跟着小一点 */
+@media (max-width: 1300px) {
+  .pricing-grid-6 { gap: 20px; }
+}
+@media (max-width: 800px) {
+  .pricing-grid-6 { gap: 16px; }
+}
