@@ -48,7 +48,6 @@ button.calc:disabled { opacity: 0.5; cursor: not-allowed; }
 .steps { display: flex; flex-direction: column; gap: 16px; }
 .step { display: flex; gap: 14px; align-items: flex-start; }
 .step-num { width: 28px; height: 28px; border-radius: 50%; background: var(--accent); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem; flex-shrink: 0; }
-.task-list { display: flex; flex-direction: column; gap: 14px; }
 .task-item { padding: 14px; background: #f8fafc; border-radius: 10px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
 .task-info { flex: 1; min-width: 200px; }
 .task-prompt { font-weight: 600; font-size: 0.9rem; margin-bottom: 4px; }
@@ -1218,7 +1217,11 @@ body.page-dark .footer a:hover { color: #a855f7; text-decoration: underline; }
   display: grid;
   grid-template-columns: 1.05fr 0.95fr;
   gap: 22px;
-  align-items: start;
+  align-items: stretch;
+}
+.dash-grid > .card {
+  display: flex;
+  flex-direction: column;
 }
 @media (max-width: 1000px) {
   .dash-grid { grid-template-columns: 1fr; }
@@ -1227,11 +1230,24 @@ body.page-dark .footer a:hover { color: #a855f7; text-decoration: underline; }
 /* 创作卡 */
 .create-card h2 { margin-bottom: 16px; }
 
+.create-card {
+  display: flex;
+  flex-direction: column;
+}
+.create-card .calc {
+  margin-top: auto;
+}
+
 /* 歌曲卡 */
 .songs-card {
   display: flex;
   flex-direction: column;
   max-height: 720px;
+}
+.songs-card .task-list {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 4px;
 }
 .songs-header {
   display: flex;
@@ -1854,11 +1870,6 @@ body.page-dark .support-block a:hover {
   margin: 14px 0 0;
   font-size: 0.85rem;
   color: #8a8a99;
-}
-/* 深色页面下让原生播放器/表单控件跟随深色主题 */
-body.page-dark,
-body.home-dark {
-  color-scheme: dark;
 }
 
 /* ============================================================
