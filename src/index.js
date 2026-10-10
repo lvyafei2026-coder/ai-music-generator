@@ -122,13 +122,14 @@ async function handleGenerate(request, env) {
     console.log('[Generate] User authenticated:', user.id);
 
     // 检查用量
-    if (user.generations_used >= user.generations_limit) {
-      console.log('[Generate] Limit reached:', user.generations_used, '/', user.generations_limit);
+    const bonus = user.bonus_generations || 0;
+    const totalLimit = (user.generations_limit || 0) + bonus;
+    if (user.generations_used >= totalLimit) {
       return json({
         error: 'You have reached your generation limit. Upgrade to Pro for more.',
         code: 'LIMIT_REACHED',
         used: user.generations_used,
-        limit: user.generations_limit
+        limit: totalLimit
       }, 403);
     }
 

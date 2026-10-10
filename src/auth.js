@@ -259,13 +259,32 @@ export async function handleMe(request, env) {
   if (!user) {
     return json({ error: 'Not authenticated' }, 401);
   }
+
+  // 邀请统计
+  let inviteCount = 0;
+  try {
+    const stats = await env.DB.prepare(
+      'SELECT COUNT(*) as c FROM invites WHERE inviter_id = ?'
+    ).bind(user.id).first();
+    inviteCount = (stats && stats.c) || 0;
+  } catch (e) {
+    console.error('[Me] invite count failed:', e.message);
+  }
+
+  const bonus = user.bonus_generations || 0;
+  const baseLimit = user.generations_limit || 0;
+
   return json({
     user: {
       id: user.id,
       email: user.email,
       plan: user.plan,
       generations_used: user.generations_used,
-      generations_limit: user.generations_limit
+      generations_limit: baseLimit,
+      bonus_generations: bonus,
+      total_limit: baseLimit + bonus,
+      invite_code: user.invite_code || user.id.slice(-8),
+      invite_count: inviteCount
     }
   });
 }
