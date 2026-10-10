@@ -1855,3 +1855,8 @@ body.page-dark .support-block a:hover {
   font-size: 0.85rem;
   color: #8a8a99;
 }
+/* 深色页面下让原生播放器/表单控件跟随深色主题 */
+body.page-dark,
+body.home-dark {
+  color-scheme: dark;
+}
