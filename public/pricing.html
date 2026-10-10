@@ -3,8 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#a855f7">
 <title data-i18n="pricingTitle">Pricing — AI Music Generator</title>
 <link rel="stylesheet" href="css/style.css">
 </head>
@@ -14,7 +12,7 @@
     <a href="./" class="logo"><span class="logo-mark">T</span> toolara.dev</a>
     <nav class="header-nav">
       <a href="dashboard.html" data-i18n="navDashboard">Dashboard</a>
-<select id="langSelect" class="lang-select" onchange="setLang(this.value)" aria-label="Language">
+      <select id="langSelect" class="lang-select" onchange="setLang(this.value)" aria-label="Language">
         <option value="en">English</option>
         <option value="zh">简体中文</option>
       </select>
@@ -25,7 +23,8 @@
 <main class="wrap">
   <h1 class="page-title" data-i18n="pricingHeading">Simple, transparent pricing</h1>
 
-  <div class="pricing-grid">
+  <div class="pricing-grid-6">
+
     <div class="pricing-card">
       <h2 data-i18n="freePlan">Free</h2>
       <div class="price">$0<span data-i18n="perMonth">/month</span></div>
@@ -34,30 +33,80 @@
         <li data-i18n="featFree2">MP3 download</li>
         <li data-i18n="featFree3">AI-generated lyrics</li>
         <li data-i18n="featFree4">Commercial use allowed</li>
+        <li data-i18n="featFree5">Up to 60 seconds per song</li>
       </ul>
       <a href="login.html" class="btn-secondary" data-i18n="getStarted">Get started</a>
     </div>
 
-    <div class="pricing-card featured">
-      <div class="popular-badge" data-i18n="popular">Most popular</div>
-      <h2 data-i18n="proPlan">Pro</h2>
-      <div class="price">$9<span data-i18n="perMonth">/month</span></div>
+    <div class="pricing-card">
+      <h2 data-i18n="planLite">Lite</h2>
+      <div class="price">$4.99<span data-i18n="perMonth">/month</span></div>
       <ul class="features">
-        <li data-i18n="featPro1">100 song generations per month</li>
+        <li data-i18n="featLite1">10 song generations per month</li>
         <li data-i18n="featPro2">MP3 download</li>
         <li data-i18n="featPro3">Custom lyrics support</li>
         <li data-i18n="featPro4">Commercial use allowed</li>
-        <li data-i18n="featPro5">Priority support</li>
+        <li data-i18n="featPro5">Up to 120 seconds per song</li>
       </ul>
-      <button class="btn-primary" onclick="subscribe()" data-i18n="upgradeToPro">Upgrade to Pro</button>
+      <button class="btn-secondary" onclick="subscribe('lite')" data-i18n="upgradeToPro">Upgrade</button>
+    </div>
+
+    <div class="pricing-card">
+      <h2 data-i18n="plan1m">1 Month</h2>
+      <div class="price">$9.99<span data-i18n="perMonth">/month</span></div>
+      <ul class="features">
+        <li data-i18n="featPro1">20 song generations per month</li>
+        <li data-i18n="featPro2">MP3 download</li>
+        <li data-i18n="featPro3">Custom lyrics support</li>
+        <li data-i18n="featPro4">Commercial use allowed</li>
+        <li data-i18n="featPro5">Up to 120 seconds per song</li>
+      </ul>
+      <button class="btn-secondary" onclick="subscribe('1m')" data-i18n="upgradeToPro">Upgrade</button>
+    </div>
+
+    <div class="pricing-card">
+      <h2 data-i18n="plan3m">3 Months</h2>
+      <div class="price">$26.99<span data-i18n="perQuarter">/quarter</span></div>
+      <div class="price-note" data-i18n="save10">Save 10%</div>
+      <ul class="features">
+        <li data-i18n="featPro1">20 song generations per month</li>
+        <li data-i18n="featPro2">MP3 download</li>
+        <li data-i18n="featPro3">Custom lyrics support</li>
+        <li data-i18n="featPro4">Commercial use allowed</li>
+        <li data-i18n="featPro5">Up to 120 seconds per song</li>
+      </ul>
+      <button class="btn-secondary" onclick="subscribe('3m')" data-i18n="upgradeToPro">Upgrade</button>
+    </div>
+
+    <div class="pricing-card">
+      <h2 data-i18n="plan6m">6 Months</h2>
+      <div class="price">$49.99<span data-i18n="perHalfYear">/6 months</span></div>
+      <div class="price-note" data-i18n="save17">Save 17%</div>
+      <ul class="features">
+        <li data-i18n="featPro1">20 song generations per month</li>
+        <li data-i18n="featPro2">MP3 download</li>
+        <li data-i18n="featPro3">Custom lyrics support</li>
+        <li data-i18n="featPro4">Commercial use allowed</li>
+        <li data-i18n="featPro5">Up to 120 seconds per song</li>
+      </ul>
+      <button class="btn-secondary" onclick="subscribe('6m')" data-i18n="upgradeToPro">Upgrade</button>
+    </div>
+
+    <div class="pricing-card featured">
+      <div class="popular-badge" data-i18n="popular">Best value</div>
+      <h2 data-i18n="plan1y">1 Year</h2>
+      <div class="price">$89.99<span data-i18n="perYear">/year</span></div>
+      <div class="price-note" data-i18n="save23">Save 23%</div>
+      <ul class="features">
+        <li data-i18n="featPro1">20 song generations per month</li>
+        <li data-i18n="featPro2">MP3 download</li>
+        <li data-i18n="featPro3">Custom lyrics support</li>
+        <li data-i18n="featPro4">Commercial use allowed</li>
+        <li data-i18n="featPro5">Up to 120 seconds per song</li>
+      </ul>
+      <button class="btn-primary" onclick="subscribe('1y')" data-i18n="upgradeToPro">Upgrade</button>
     </div>
   </div>
-
-  <section class="support-block" id="supportBlock">
-    <h3 data-i18n="supportTitle">Need help or business inquiry?</h3>
-    <p><span data-i18n="supportBody">Email us at</span> <a href="mailto:lvyafei2026@gmail.com">lvyafei2026@gmail.com</a></p>
-  </section>
-
 </main>
 
 <script src="js/i18n.js"></script>
@@ -68,21 +117,22 @@ function t(key, fallback) {
   return (window.__i18n && window.__i18n.t && window.__i18n.t[key]) || fallback || key;
 }
 
-async function subscribe() {
+async function subscribe(planType) {
   var meRes = await fetch(API_BASE + '/api/auth/me');
   if (!meRes.ok) {
     window.location.href = 'login.html';
     return;
   }
   var meData = await meRes.json();
-  if (meData.user.plan === 'pro') {
-    alert(t('alreadyPro', 'You are already on the Pro plan.'));
+  if (meData.user.plan === 'pro' || meData.user.plan === 'lite') {
+    alert(t('alreadyPro', 'You are already on a paid plan.'));
     window.location.href = 'dashboard.html';
     return;
   }
   var res = await fetch(API_BASE + '/api/billing/checkout', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' }
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ planType: planType })
   });
   var data = await res.json();
   if (data.url) {
@@ -91,14 +141,6 @@ async function subscribe() {
     alert(data.error || t('checkoutFailed', 'Could not start checkout.'));
   }
 }
-</script>
-<!-- Service Worker 暂时禁用：等图标和 MIME 类型全部就位后再启用
-<script>
-// if ('serviceWorker' in navigator) {
-//   window.addEventListener('load', function () {
-//     navigator.serviceWorker.register('/music/sw.js').catch(function () {});
-//   });
-// }
 </script>
 </body>
 </html>

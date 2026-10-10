@@ -145,7 +145,19 @@ async function handleGenerate(request, env) {
     const prompt = (body.prompt || '').trim();
     const lyrics = (body.lyrics || '').trim();
     const isInstrumental = !!body.isInstrumental;
-    const audioDuration = Math.min(Math.max(parseInt(body.audioDuration, 10) || 120, 10), 300);
+    const rawDuration = parseInt(body.audioDuration, 10) || 120;
+    const isPro = user.plan === 'pro';
+    const maxDuration = isPro ? 120 : 60;
+    if (rawDuration > maxDuration) {
+      return json({
+        error: isPro
+          ? 'Maximum duration is 120 seconds.'
+          : 'Free plan allows up to 60 seconds. Upgrade for up to 120 seconds.',
+        code: 'DURATION_LIMIT',
+        maxAllowed: maxDuration
+      }, 403);
+    }
+    const audioDuration = Math.min(Math.max(rawDuration, 10), maxDuration);
 
     console.log('[Generate] Payload:', { promptLength: prompt.length, hasLyrics: !!lyrics, isInstrumental });
 

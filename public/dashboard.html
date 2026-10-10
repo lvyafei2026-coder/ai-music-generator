@@ -71,8 +71,8 @@
       <label data-i18n="labelPrompt">Describe your song</label>
       <textarea id="prompt" rows="3" data-i18n-placeholder="promptPlaceholder" placeholder="An upbeat electronic dance track with female vocals about summer nights"></textarea>
 
-      <label data-i18n="labelDuration">Duration (seconds, 10–300)</label>
-      <input type="number" id="duration" min="10" max="300" step="10" value="120" inputmode="numeric">
+      <label data-i18n="labelDuration">Duration (seconds, 10–120)</label>
+      <input type="number" id="duration" min="10" max="60" step="10" value="60" inputmode="numeric">
 
       <label data-i18n="labelLyrics">Lyrics (optional — leave blank for AI-generated lyrics)</label>
       <textarea id="lyrics" rows="5" data-i18n-placeholder="lyricsPlaceholder" placeholder="Paste your own lyrics here, or leave blank..."></textarea>
@@ -143,10 +143,34 @@ async function loadUser() {
   var emailEl = document.getElementById('userEmailTop');
   if (emailEl) emailEl.textContent = u.email;
 
-  var isPro = u.plan === 'pro';
+  var plan = u.plan || 'free';
+  var isPro = plan === 'pro';
+  var isLite = plan === 'lite';
+  var isPaid = isPro || isLite;
+
   var badge = document.getElementById('planBadge');
-  badge.textContent = isPro ? t('planPro', 'Pro') : t('planFree', 'Free');
-  badge.className = 'plan-badge ' + (isPro ? 'pro' : 'free');
+  if (isPro) {
+    badge.textContent = 'Pro';
+    badge.className = 'plan-badge pro';
+  } else if (isLite) {
+    badge.textContent = 'Lite';
+    badge.className = 'plan-badge lite';
+  } else {
+    badge.textContent = t('planFree', 'Free');
+    badge.className = 'plan-badge free';
+  }
+
+  // 时长输入框：免费 60 秒上限，付费 120 秒
+  var durInput = document.getElementById('duration');
+  if (durInput) {
+    if (isPaid) {
+      durInput.max = 120;
+      if (!durInput.dataset.touched) durInput.value = 120;
+    } else {
+      durInput.max = 60;
+      if (!durInput.dataset.touched) durInput.value = 60;
+    }
+  }
 
   var used = u.generations_used || 0;
   var limit = u.generations_limit || 3;

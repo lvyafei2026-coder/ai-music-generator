@@ -75,11 +75,12 @@
   "featFree2": "MP3 下载",
   "featFree3": "AI 生成歌词",
   "featFree4": "允许商用",
-  "featPro1": "每月 100 首歌曲生成",
+  "featFree5": "每首最长 60 秒",
+  "featPro1": "每月 20 首歌曲生成",
   "featPro2": "MP3 下载",
   "featPro3": "支持自定义歌词",
   "featPro4": "允许商用",
-  "featPro5": "优先支持",
+  "featPro5": "每首最长 120 秒",
   "getStarted": "免费开始",
   "upgradeToPro": "升级到 Pro",
   "alreadyPro": "你已经是 Pro 套餐。",
@@ -201,5 +202,7 @@
   "inviteCopy": "复制链接",
   "inviteCopied": "已复制！",
   "inviteStats": "已邀请 {count} 人 · 获得 {bonus} 首额外额度",
-  "inviteNone": "还没有好友加入——分享你的链接吧！"
+  "inviteNone": "还没有好友加入——分享你的链接吧！",
+  "planLite": "Lite",
+  "featLite1": "每月 10 首歌曲生成"
 }

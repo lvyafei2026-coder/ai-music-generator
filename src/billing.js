@@ -1,6 +1,5 @@
-import { findUserById, updateUserPlan } from './db.js';
+import { updateUserPlan } from './db.js';
 
-// PayPal API 基础地址（沙箱环境）
 const PAYPAL_API = 'https://api-m.sandbox.paypal.com';
 
 function json(obj, status = 200) {
@@ -10,7 +9,6 @@ function json(obj, status = 200) {
   });
 }
 
-// ---------- OAuth 获取 Access Token ----------
 async function getPayPalAccessToken(env) {
   const auth = btoa(`${env.PAYPAL_CLIENT_ID}:${env.PAYPAL_CLIENT_SECRET}`);
   const res = await fetch(`${PAYPAL_API}/v1/oauth2/token`, {
@@ -22,13 +20,10 @@ async function getPayPalAccessToken(env) {
     body: 'grant_type=client_credentials'
   });
   const data = await res.json();
-  if (!data.access_token) {
-    throw new Error('Failed to get PayPal access token');
-  }
+  if (!data.access_token) throw new Error('Failed to get PayPal access token');
   return data.access_token;
 }
 
-// ---------- 通用 PayPal API 请求 ----------
 async function paypalRequest(env, endpoint, method = 'GET', body = null) {
   const token = await getPayPalAccessToken(env);
   const options = {
@@ -39,30 +34,44 @@ async function paypalRequest(env, endpoint, method = 'GET', body = null) {
       'PayPal-Request-Id': crypto.randomUUID()
     }
   };
-  if (body) {
-    options.body = JSON.stringify(body);
-  }
+  if (body) options.body = JSON.stringify(body);
   const res = await fetch(`${PAYPAL_API}${endpoint}`, options);
   const data = await res.json();
   return { ok: res.ok, status: res.status, data };
 }
 
-// ---------- 创建 Checkout Session ----------
+// Plan 类型 → 环境变量名 & 用户 plan 值 & 首数限制
+const PLAN_MAP = {
+  'lite': { envKey: 'PAYPAL_PLAN_ID_LITE', planName: 'lite', limit: 10 },
+  '1m':   { envKey: 'PAYPAL_PLAN_ID_1M',   planName: 'pro',  limit: 20 },
+  '3m':   { envKey: 'PAYPAL_PLAN_ID_3M',   planName: 'pro',  limit: 20 },
+  '6m':   { envKey: 'PAYPAL_PLAN_ID_6M',   planName: 'pro',  limit: 20 },
+  '1y':   { envKey: 'PAYPAL_PLAN_ID_1Y',   planName: 'pro',  limit: 20 }
+};
+
 export async function handleCreateCheckout(request, env) {
   try {
     const user = await getAuthUser(request, env);
     if (!user) return json({ error: 'Not authenticated' }, 401);
 
-    // 使用你在 PayPal 后台创建好的 Plan ID
-    const planId = env.PAYPAL_PLAN_ID_PRO;
+    let body = {};
+    try { body = await request.json(); } catch (e) {}
+    const planType = (body.planType || '1y').toLowerCase();
+
+    const cfg = PLAN_MAP[planType];
+    if (!cfg) return json({ error: 'Invalid plan type.' }, 400);
+
+    const planId = env[cfg.envKey];
     if (!planId) {
       return json({ error: 'PayPal plan not configured.' }, 500);
     }
 
-    // 创建订阅
+    // custom_id 传 user.id|planType，Webhook 里解析
+    const customId = user.id + '|' + planType;
+
     const result = await paypalRequest(env, '/v1/billing/subscriptions', 'POST', {
       plan_id: planId,
-      custom_id: user.id,  // 用你的用户 ID 关联订阅
+      custom_id: customId,
       application_context: {
         brand_name: 'AI Music Generator',
         locale: 'en-US',
@@ -78,11 +87,8 @@ export async function handleCreateCheckout(request, env) {
       return json({ error: 'Could not create subscription.' }, 500);
     }
 
-    // 找到 approve 链接
     const approveLink = result.data.links?.find(l => l.rel === 'approve');
-    if (!approveLink) {
-      return json({ error: 'No approval link from PayPal.' }, 500);
-    }
+    if (!approveLink) return json({ error: 'No approval link from PayPal.' }, 500);
 
     return json({ url: approveLink.href });
   } catch (err) {
@@ -91,26 +97,21 @@ export async function handleCreateCheckout(request, env) {
   }
 }
 
-// 收到 ACTIVATED 事件后，主动查询订阅状态
 async function verifySubscription(env, subscriptionId) {
   const token = await getPayPalAccessToken(env);
   const res = await fetch(
-    `https://api-m.sandbox.paypal.com/v1/billing/subscriptions/${subscriptionId}`,
-    {
-      headers: { 'Authorization': `Bearer ${token}` }
-    }
+    `${PAYPAL_API}/v1/billing/subscriptions/${subscriptionId}`,
+    { headers: { 'Authorization': `Bearer ${token}` } }
   );
   const data = await res.json();
   return data.status === 'ACTIVE';
 }
 
-// ---------- 处理 PayPal Webhook ----------
 export async function handlePayPalWebhook(request, env) {
   try {
     const rawBody = await request.text();
     const headers = request.headers;
 
-    // 收集验证所需字段
     const transmissionId = headers.get('paypal-transmission-id');
     const transmissionTime = headers.get('paypal-transmission-time');
     const transmissionSig = headers.get('paypal-transmission-sig');
@@ -121,7 +122,6 @@ export async function handlePayPalWebhook(request, env) {
       return json({ error: 'Missing PayPal signature headers.' }, 400);
     }
 
-    // 调用 PayPal 的 verify-webhook-signature 端点进行验证
     const verifyResult = await paypalRequest(env, '/v1/notifications/verify-webhook-signature', 'POST', {
       auth_algo: authAlgo,
       cert_url: certUrl,
@@ -140,64 +140,71 @@ export async function handlePayPalWebhook(request, env) {
     const event = JSON.parse(rawBody);
     console.log('PayPal webhook event:', event.event_type);
 
-    // 处理订阅激活和首次付款
-    if (event.event_type === 'BILLING.SUBSCRIPTION.ACTIVATED' || 
+    // ---------- 订阅激活 / 付款成功 ----------
+    if (event.event_type === 'BILLING.SUBSCRIPTION.ACTIVATED' ||
         event.event_type === 'PAYMENT.SALE.COMPLETED') {
       const resource = event.resource;
-      
-      // 从 resource 里找到关联的订阅 ID 和 custom_id
-      // PAYMENT.SALE.COMPLETED 事件里，custom_id 可能在 resource.custom 或 resource.custom_id
-      const subscriptionId = resource.billing_agreement_id || resource.id;
-      const customId = resource.custom || resource.custom_id;
-      
-      console.log('Processing payment event:', {
-        eventType: event.event_type,
-        subscriptionId,
-        customId
-      });
 
-      // 如果事件里没有 custom_id，需要通过订阅 ID 反查用户
-      let userId = customId;
-      
-      if (!userId && subscriptionId) {
-        // 用订阅 ID 查 PayPal API 获取订阅详情，从中取出 custom_id
+      const subscriptionId = resource.billing_agreement_id || resource.id;
+      let customId = resource.custom || resource.custom_id;
+
+      // 从订阅详情里反查 custom_id
+      if (!customId && subscriptionId) {
         try {
           const token = await getPayPalAccessToken(env);
           const subRes = await fetch(
-            `https://api-m.sandbox.paypal.com/v1/billing/subscriptions/${subscriptionId}`,
+            `${PAYPAL_API}/v1/billing/subscriptions/${subscriptionId}`,
             { headers: { 'Authorization': `Bearer ${token}` } }
           );
           const subData = await subRes.json();
-          userId = subData.custom_id;
-          console.log('Fetched subscription details:', {
-            status: subData.status,
-            customId: userId
-          });
+          customId = subData.custom_id;
         } catch (err) {
           console.error('Failed to fetch subscription:', err);
         }
       }
 
-      if (userId) {
+      if (customId) {
+        const parts = String(customId).split('|');
+        const userId = parts[0];
+        const planType = parts[1] || '1y';
+        const cfg = PLAN_MAP[planType] || PLAN_MAP['1y'];
+
         await updateUserPlan(env, userId, {
-          plan: 'pro',
-          limit: 100,
+          plan: cfg.planName,
+          limit: cfg.limit,
           stripeCustomerId: null,
           stripeSubscriptionId: subscriptionId
         });
-        console.log(`User ${userId} upgraded to Pro via ${event.event_type}`);
+        console.log(`User ${userId} upgraded to ${cfg.planName} (${planType}) via ${event.event_type}`);
       } else {
         console.error('No user_id found in webhook event');
       }
     }
 
+    // ---------- 取消 / 到期 / 暂停 ----------
     if (event.event_type === 'BILLING.SUBSCRIPTION.CANCELLED' ||
         event.event_type === 'BILLING.SUBSCRIPTION.EXPIRED' ||
         event.event_type === 'BILLING.SUBSCRIPTION.SUSPENDED') {
       const subscription = event.resource;
-      const userId = subscription.custom_id;
+      let customId = subscription.custom_id;
 
-      if (userId) {
+      // 有些事件里 custom_id 不在 resource 上，用订阅 ID 反查
+      if (!customId && subscription.id) {
+        try {
+          const token = await getPayPalAccessToken(env);
+          const subRes = await fetch(
+            `${PAYPAL_API}/v1/billing/subscriptions/${subscription.id}`,
+            { headers: { 'Authorization': `Bearer ${token}` } }
+          );
+          const subData = await subRes.json();
+          customId = subData.custom_id;
+        } catch (err) {
+          console.error('Failed to fetch subscription for cancel:', err);
+        }
+      }
+
+      if (customId) {
+        const userId = String(customId).split('|')[0];
         await updateUserPlan(env, userId, {
           plan: 'free',
           limit: 3,
@@ -215,7 +222,6 @@ export async function handlePayPalWebhook(request, env) {
   }
 }
 
-// ---------- 获取认证用户（简化版，避免循环依赖）----------
 async function getAuthUser(request, env) {
   const cookieHeader = request.headers.get('Cookie') || '';
   const match = cookieHeader.match(/session_id=([^;]+)/);

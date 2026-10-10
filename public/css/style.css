@@ -1923,3 +1923,45 @@ body.page-dark .task-list::-webkit-scrollbar-thumb:hover,
 body.page-dark .songs-card::-webkit-scrollbar-thumb:hover {
   background: rgba(168, 85, 247, 0.55);
 }
+
+/* ============================================================
+   6 卡片定价布局（Free + Lite + Pro×4）
+   ============================================================ */
+.pricing-grid-6 {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 14px;
+}
+@media (max-width: 1300px) {
+  .pricing-grid-6 { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 800px) {
+  .pricing-grid-6 { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 560px) {
+  .pricing-grid-6 { grid-template-columns: 1fr; }
+}
+.pricing-grid-6 .pricing-card {
+  padding: 20px 14px;
+}
+.pricing-grid-6 .price {
+  font-size: 1.6rem;
+}
+.pricing-grid-6 .price span {
+  font-size: 0.7rem;
+}
+.pricing-grid-6 .features li {
+  font-size: 0.78rem;
+  padding: 4px 0;
+}
+.pricing-grid-6 .btn-secondary,
+.pricing-grid-6 .btn-primary {
+  width: 100%;
+  text-align: center;
+  padding: 9px 12px;
+  font-size: 0.85rem;
+}
+.plan-badge.lite {
+  background: rgba(59,130,246,0.18);
+  color: #93c5fd;
+}

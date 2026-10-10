@@ -75,11 +75,12 @@
   "featFree2": "MP3 download",
   "featFree3": "AI-generated lyrics",
   "featFree4": "Commercial use allowed",
-  "featPro1": "100 song generations per month",
+  "featFree5": "Up to 60 seconds per song",
+  "featPro1": "20 song generations per month",
   "featPro2": "MP3 download",
   "featPro3": "Custom lyrics support",
   "featPro4": "Commercial use allowed",
-  "featPro5": "Priority support",
+  "featPro5": "Up to 120 seconds per song",
   "getStarted": "Get started",
   "upgradeToPro": "Upgrade to Pro",
   "alreadyPro": "You are already on the Pro plan.",
@@ -201,5 +202,7 @@
   "inviteCopy": "Copy link",
   "inviteCopied": "Copied!",
   "inviteStats": "{count} friend(s) joined · {bonus} bonus songs earned",
-  "inviteNone": "No friends yet — share your link!"
+  "inviteNone": "No friends yet — share your link!",
+  "planLite": "Lite",
+  "featLite1": "10 song generations per month"
 }
